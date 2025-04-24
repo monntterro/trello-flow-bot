@@ -6,7 +6,7 @@ GET https://api.trello.com/1/tokens/{{trelloToken}}/webhooks?key={{trelloKey}}&t
     client.global.set("trelloWebhookId", response.body[0].id);
 %}
 
-### Update webhook (Alse you can set your description)
+### Update webhook (Also you can set your description)
 // @no-log
 PUT https://api.trello.com/1/webhooks/{{trelloWebhookId}}?key={{trelloKey}}&token={{trelloToken}}
 Content-Type: application/json
