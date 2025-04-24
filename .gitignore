@@ -1,7 +1,7 @@
 ##############################
 ## Project
 ##############################
-*.env
+.env
 gradlew
 gradlew.bat
 additional
