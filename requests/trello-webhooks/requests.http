@@ -1,0 +1,17 @@
+### Get all webhooks (And it will set trelloWebhookId for next request, if you have one webhook or you should do it manually)
+// @no-log
+GET https://api.trello.com/1/tokens/{{trelloToken}}/webhooks?key={{trelloKey}}&token={{trelloToken}}
+
+> {%
+    client.global.set("trelloWebhookId", response.body[0].id);
+%}
+
+### Update webhook (Also you can set your description)
+// @no-log
+PUT https://api.trello.com/1/webhooks/{{trelloWebhookId}}?key={{trelloKey}}&token={{trelloToken}}
+Content-Type: application/json
+
+{
+  "description": "TrelloFlowBot",
+  "callbackURL": "{{ngrokUrl}}/api/v1/trello-updates"
+}
