@@ -20,21 +20,13 @@ repositories {
 dependencies {
     // Spring
     implementation "org.springframework.boot:spring-boot-starter-web:${springWebVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springDataJpaVersion}"
 
     // Telegram
     implementation "org.telegram:telegrambots:${telegramBotVersion}"
 
-    // Flyway
-    implementation "org.flywaydb:flyway-core:${flywayVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-
     // RabbitMQ
     implementation "org.springframework.boot:spring-boot-starter-amqp:${rabbitMQVersion}"
     testImplementation "org.springframework.amqp:spring-rabbit-test:${rabbitMqTestVersion}"
-
-    // Postgres
-    runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
