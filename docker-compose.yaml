@@ -2,12 +2,11 @@ name: trello-flow-bot
 
 services:
   backend:
-    image: trello-flow-bot:latest
     build:
       context: .
     restart: on-failure
-    environment:
-      POSTGRES_HOST: postgres
+    env_file:
+      - .docker.env
     ports:
       - "8081:8081"
     depends_on:
