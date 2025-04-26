@@ -12,7 +12,7 @@ PUT https://api.trello.com/1/webhooks/{{trelloWebhookId}}?key={{trelloKey}}&toke
 Content-Type: application/json
 
 {
-  "callbackURL": "{{ngrokUrl}}/api/v1/trello-updates"
+  "callbackURL": "{{baseUrl}}/api/v1/trello-updates"
 }
 
 ### Disable/Active webhook

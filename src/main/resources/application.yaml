@@ -30,6 +30,3 @@ spring:
 telegram:
   bot:
     token: ${BOT_TOKEN}
-    username: ${BOT_USERNAME}
-    path: ${BOT_PATH}
-    url: ${BOT_URL}

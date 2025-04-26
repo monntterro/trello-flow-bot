@@ -22,4 +22,12 @@ public class User {
 
     @Column(name = "chat_id")
     private Long chatId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state")
+    private State state;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Role role;
 }

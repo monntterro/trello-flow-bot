@@ -21,9 +21,11 @@ dependencies {
     // Spring
     implementation "org.springframework.boot:spring-boot-starter-web:${springWebVersion}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springDataJpaVersion}"
+    implementation "org.springframework.security:spring-security-crypto:${springSecurityCryptoVersion}"
 
     // Telegram
-    implementation "org.telegram:telegrambots:${telegramBotVersion}"
+    implementation "org.telegram:telegrambots-client:${telegramBotVersion}"
+    implementation "org.telegram:telegrambots-springboot-longpolling-starter:${telegramBotVersion}"
 
     // Flyway
     implementation "org.flywaydb:flyway-core:${flywayVersion}"

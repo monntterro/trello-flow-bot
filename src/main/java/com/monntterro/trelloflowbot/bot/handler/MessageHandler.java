@@ -1,57 +1,60 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
+import com.monntterro.trelloflowbot.bot.entity.Role;
+import com.monntterro.trelloflowbot.bot.entity.State;
 import com.monntterro.trelloflowbot.bot.entity.User;
-import com.monntterro.trelloflowbot.bot.service.TelegramBot;
+import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.processor.CommandProcessor;
+import com.monntterro.trelloflowbot.bot.processor.RegistrationProcessor;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class MessageHandler {
-    private final TelegramBot bot;
+    private final CommandProcessor commandProcessor;
+    private final RegistrationProcessor registrationProcessor;
     private final UserService userService;
 
-    public void handle(Update update) {
-        Message message = update.getMessage();
+    public void handle(Message message) {
         if (message.isCommand()) {
-            switch (message.getText()) {
-                case "/start" -> startCommand(update);
-                case "/subscribe" -> subscribeCommand(update);
+            if ("/start".equals(message.getText())) {
+                commandProcessor.process(message);
+                return;
             }
         }
-    }
 
-    private void subscribeCommand(Update update) {
-        Long chatId = update.getMessage().getChatId();
-        Long telegramId = update.getMessage().getFrom().getId();
+        long chatId = message.getChatId();
+        long telegramId = message.getFrom().getId();
 
-        String text;
-        if (userService.existsByChatId(chatId)) {
-            text = "Вы уже подписаны на объявления";
+        if (userService.existsByTelegramId(telegramId)) {
+            if (!userService.existsByChatId(chatId)) {
+                userService.updateChatId(telegramId, chatId);
+            }
         } else {
-            if (userService.existsByTelegramId(telegramId)) {
-                User user = userService.findById(telegramId).get();
-                user.setChatId(chatId);
-                userService.save(user);
-            } else {
-                User user = User.builder()
-                        .telegramId(telegramId)
-                        .chatId(chatId)
-                        .build();
-                userService.save(user);
-            }
-            text = "Вы были подписаны на объявления";
+            User user = User.builder()
+                    .chatId(chatId)
+                    .telegramId(telegramId)
+                    .role(Role.UNDEFINED)
+                    .state(State.NOT_REGISTERED)
+                    .build();
+            userService.save(user);
+            registrationProcessor.authorize(message, user);
+            return;
         }
 
-        bot.sendMessage(text, chatId);
-    }
-
-    private void startCommand(Update update) {
-        String text = "Это бот для уведомления об изменениях в пространстве Trello. Для подписки на обновления введите команду /subscribe";
-        long chatId = update.getMessage().getChatId();
-        bot.sendMessage(text, chatId);
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+        switch (user.getState()) {
+            case IDLE -> {
+                if (message.isCommand()) {
+                    commandProcessor.process(message);
+                }
+            }
+            case NOT_REGISTERED -> registrationProcessor.authorize(message, user);
+            case CHOOSING_ROLE -> registrationProcessor.process(message, user);
+        }
     }
 }
