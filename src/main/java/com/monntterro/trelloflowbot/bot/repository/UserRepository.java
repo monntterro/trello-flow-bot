@@ -9,8 +9,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    boolean existsByChatId(Long chatId);
-
     boolean existsByTelegramId(Long telegramId);
 
     Optional<User> findByTelegramId(Long telegramId);

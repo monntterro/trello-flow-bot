@@ -1,6 +1,7 @@
 package com.monntterro.trelloflowbot.bot.entity;
 
 
+import com.monntterro.trelloflowbot.bot.converter.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,16 +19,20 @@ public class User {
     private Long id;
 
     @Column(name = "telegram_id")
-    private Long telegramId;
+    private long telegramId;
 
     @Column(name = "chat_id")
-    private Long chatId;
+    private long chatId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private State state;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Role role;
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "trello_api_key")
+    private String trelloApiKey;
+
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "trello_api_token")
+    private String trelloApiToken;
 }

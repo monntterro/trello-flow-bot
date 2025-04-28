@@ -6,7 +6,6 @@ import com.monntterro.trelloflowbot.bot.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,16 +17,8 @@ public class UserService {
         return userRepository.findByTelegramId(telegramId);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
-    public boolean existsByChatId(Long chatId) {
-        return userRepository.existsByChatId(chatId);
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
     public boolean existsByTelegramId(Long telegramId) {

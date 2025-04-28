@@ -27,6 +27,10 @@ spring:
       hibernate:
         format_sql: true
 
+encryption:
+  key: ${ENCRYPTION_KEY}
+  salt: ${ENCRYPTION_SALT}
+
 telegram:
   bot:
     token: ${BOT_TOKEN}
