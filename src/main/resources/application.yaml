@@ -26,11 +26,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
 encryption:
   key: ${ENCRYPTION_KEY}
   salt: ${ENCRYPTION_SALT}
-
+trello:
+  webhook:
+    baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
 telegram:
   bot:
     token: ${BOT_TOKEN}

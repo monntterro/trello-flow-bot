@@ -21,7 +21,7 @@ public class CallbackDataCache {
         return key;
     }
 
-    public String get(String key) {
+    public String getAndRemove(String key) {
         return cache.remove(key);
     }
 }

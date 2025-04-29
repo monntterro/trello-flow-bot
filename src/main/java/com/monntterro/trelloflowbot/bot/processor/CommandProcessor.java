@@ -65,7 +65,7 @@ public class CommandProcessor {
         user.setState(State.REGISTRATION);
         userService.save(user);
 
-        String text = "Пришли мне ключ и через запятую токен Trello API. Для отмены пришли команду /cancel";
+        String text = "Пришли мне ключ и через запятую токен Trello API\\. Для отмены пришли команду /cancel";
         bot.sendMessage(text, message.getChatId());
     }
 }
