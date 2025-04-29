@@ -11,9 +11,9 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -49,18 +49,6 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
-                .build();
-        try {
-            telegramClient.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    public void sendMessageWithMarkdown(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .text(text)
-                .chatId(chatId)
                 .parseMode(ParseMode.MARKDOWNV2)
                 .build();
         try {
@@ -70,11 +58,12 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
     }
 
-    public void sendMessageWithReplyMarkup(String text, long chatId, ReplyKeyboardMarkup replyMarkup) {
+    public void sendMessage(String text, long chatId, InlineKeyboardMarkup markup) {
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
-                .replyMarkup(replyMarkup)
+                .parseMode(ParseMode.MARKDOWNV2)
+                .replyMarkup(markup)
                 .build();
         try {
             telegramClient.execute(sendMessage);
@@ -83,11 +72,13 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
     }
 
-    public void sendMessageAndDeleteReplyMarkup(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
+    public void editMessage(String text, long chatId, int messageId, InlineKeyboardMarkup markup) {
+        EditMessageText sendMessage = EditMessageText.builder()
                 .text(text)
                 .chatId(chatId)
-                .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
+                .messageId(messageId)
+                .parseMode(ParseMode.MARKDOWNV2)
+                .replyMarkup(markup)
                 .build();
         try {
             telegramClient.execute(sendMessage);

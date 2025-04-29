@@ -8,10 +8,13 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 public class UpdateHandler {
     private final MessageHandler messageHandler;
+    private final CallbackHandler callbackHandler;
 
     public void handle(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             messageHandler.handle(update.getMessage());
+        } else if (update.hasCallbackQuery()) {
+            callbackHandler.handle(update.getCallbackQuery());
         }
     }
 }
