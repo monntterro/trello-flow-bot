@@ -31,4 +31,8 @@ public class UserService {
         user.setChatId(chatId);
         userRepository.save(user);
     }
+
+    public Optional<User> findById(long id) {
+        return userRepository.findById(id);
+    }
 }
