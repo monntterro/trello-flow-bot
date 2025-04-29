@@ -48,12 +48,12 @@ public class CommandProcessor {
         user.setState(State.IDLE);
         userService.save(user);
 
-        String text = "Регистрация отменена.";
+        String text = "Регистрация отменена\\.";
         bot.sendMessage(text, message.getChatId());
     }
 
     private void startCommand(Message message) {
-        String text = "Привет!";
+        String text = "Привет\\!";
         bot.sendMessage(text, message.getChatId());
         registrationCommand(message);
     }

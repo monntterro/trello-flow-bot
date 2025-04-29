@@ -46,7 +46,8 @@ public class CallbackHandler {
                 .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
 
         String modelId = JsonParser.read(data, "modelId", String.class);
-        trelloClient.subscribeToModel(modelId, user.getTrelloApiKey(), user.getTrelloApiToken());
+        String webhookId = String.valueOf(user.getId());
+        trelloClient.subscribeToModel(modelId, webhookId, user.getTrelloApiKey(), user.getTrelloApiToken());
 
         String text = "Вы подписались на доску\\. Теперь вы будет получать уведомление об изменениях на этой доске\\.";
         long chatId = callbackQuery.getMessage().getChatId();

@@ -28,8 +28,8 @@ public class TrelloClient {
         return apiClient.getMyBoards(key, token);
     }
 
-    public void subscribeToModel(String modelId, String key, String token) {
-        String callbackUrl = webhookBaseUrl + "/" + modelId;
+    public void subscribeToModel(String modelId, String webhookId, String key, String token) {
+        String callbackUrl = webhookBaseUrl + "/" + webhookId;
         apiClient.createWebhook(callbackUrl, modelId, key, token);
     }
 }
