@@ -11,5 +11,5 @@ import java.util.List;
 public interface TrelloApiClient {
 
     @GetMapping("/members/me/boards")
-    List<Board> getBoards(@RequestParam("key") String key, @RequestParam("token") String token);
+    List<Board> getMyBoards(@RequestParam("key") String key, @RequestParam("token") String token);
 }

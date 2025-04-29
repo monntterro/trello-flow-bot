@@ -43,7 +43,7 @@ public class RegistrationProcessor {
         user.setTrelloApiKey(key);
         user.setTrelloApiToken(token);
         userService.save(user);
-        String text = "Регистрация прошла успешно! Теперь вы можете использовать бота.";
+        String text = "Регистрация прошла успешно! Теперь вы можете использовать бота. Воспользуйся командой /menu, чтобы увидеть доступные команды.";
         bot.sendMessage(text, message.getChatId());
     }
 }
