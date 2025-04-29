@@ -30,13 +30,28 @@ public class CallbackHandler {
     private final CallbackDataCache dataCache;
 
     public void handle(CallbackQuery callbackQuery) {
-        String jsonData = dataCache.get(callbackQuery.getData());
+        String jsonData = dataCache.getAndRemove(callbackQuery.getData());
         CallbackData callbackData = CallbackData.from(jsonData);
 
         switch (callbackData.getType()) {
             case MY_BOARDS -> getMyBoards(callbackQuery);
             case GET_BOARD -> getBoard(callbackQuery, callbackData.getData());
+            case SUBSCRIBE -> subscribeToModel(callbackQuery, callbackData.getData());
         }
+    }
+
+    private void subscribeToModel(CallbackQuery callbackQuery, String data) {
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+
+        String modelId = JsonParser.read(data, "modelId", String.class);
+        trelloClient.subscribeToModel(modelId, user.getTrelloApiKey(), user.getTrelloApiToken());
+
+        String text = "Вы подписались на доску\\. Теперь вы будет получать уведомление об изменениях на этой доске\\.";
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId);
     }
 
     private void getBoard(CallbackQuery callbackQuery, String data) {
@@ -44,10 +59,10 @@ public class CallbackHandler {
         String boardName = JsonParser.read(data, "name", String.class);
         String text = "Хотите подписаться на доску [%s](%s)?".formatted(boardName, boardUrl);
 
-        String boardId = JsonParser.read(data, "id", String.class);
+        String boardId = JsonParser.read(data, "modelId", String.class);
         String subscribeCallbackData = JsonParser.create()
                 .with("type", Type.SUBSCRIBE)
-                .with("id", boardId)
+                .with("modelId", boardId)
                 .toJson();
         String subscribeCallbackDataId = dataCache.put(subscribeCallbackData);
         String myBoardsCallbackData = JsonParser.create()
@@ -74,7 +89,7 @@ public class CallbackHandler {
         for (Board board : boards) {
             String callbackData = JsonParser.create()
                     .with("type", Type.GET_BOARD)
-                    .with("id", board.getId())
+                    .with("modelId", board.getId())
                     .with("name", board.getName())
                     .with("url", board.getShortUrl())
                     .toJson();

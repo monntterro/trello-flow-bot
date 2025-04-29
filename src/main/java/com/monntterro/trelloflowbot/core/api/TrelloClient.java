@@ -2,6 +2,7 @@ package com.monntterro.trelloflowbot.core.api;
 
 import com.monntterro.trelloflowbot.core.model.Board;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TrelloClient {
     private final TrelloApiClient apiClient;
+
+    @Value("${trello.webhook.baseUrl}")
+    private String webhookBaseUrl;
 
     public boolean isValidKeyAndToken(String key, String token) {
         try {
@@ -22,5 +26,10 @@ public class TrelloClient {
 
     public List<Board> getMyBoards(String key, String token) {
         return apiClient.getMyBoards(key, token);
+    }
+
+    public void subscribeToModel(String modelId, String key, String token) {
+        String callbackUrl = webhookBaseUrl + "/" + modelId;
+        apiClient.createWebhook(callbackUrl, modelId, key, token);
     }
 }

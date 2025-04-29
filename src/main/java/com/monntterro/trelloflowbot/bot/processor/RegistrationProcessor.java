@@ -26,7 +26,7 @@ public class RegistrationProcessor {
 
         String[] keyAndToken = messageText.split(",\\s+", 2);
         if (keyAndToken.length != 2) {
-            String text = "Неверный формат. Попробуйте еще раз.";
+            String text = "Неверный формат\\. Попробуйте еще раз\\.";
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -34,7 +34,7 @@ public class RegistrationProcessor {
         String key = keyAndToken[0];
         String token = keyAndToken[1];
         if (!trelloClient.isValidKeyAndToken(key, token)) {
-            String text = "Неверный ключ или токен. Попробуйте еще раз.";
+            String text = "Неверный ключ или токен\\. Попробуйте еще раз\\.";
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -43,7 +43,7 @@ public class RegistrationProcessor {
         user.setTrelloApiKey(key);
         user.setTrelloApiToken(token);
         userService.save(user);
-        String text = "Регистрация прошла успешно! Теперь вы можете использовать бота. Воспользуйся командой /menu, чтобы увидеть доступные команды.";
+        String text = "Регистрация прошла успешно! Теперь вы можете использовать бота\\. Воспользуйся командой /menu, чтобы увидеть доступные команды\\.";
         bot.sendMessage(text, message.getChatId());
     }
 }
