@@ -12,11 +12,7 @@ public class CallbackDataCache {
     private final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
     public String put(String json) {
-        String key;
-        do {
-            key = UUID.randomUUID().toString();
-        } while (cache.containsKey(key));
-
+        String key = UUID.randomUUID().toString();
         cache.put(key, json);
         return key;
     }

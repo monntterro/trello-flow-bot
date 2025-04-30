@@ -1,7 +1,7 @@
 package com.monntterro.trelloflowbot.bot.processor;
 
-import com.monntterro.trelloflowbot.bot.entity.State;
-import com.monntterro.trelloflowbot.bot.entity.User;
+import com.monntterro.trelloflowbot.bot.entity.user.State;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.core.api.TrelloClient;

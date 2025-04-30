@@ -1,6 +1,7 @@
 package com.monntterro.trelloflowbot.core.api;
 
 import com.monntterro.trelloflowbot.core.model.Board;
+import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,12 @@ public class TrelloClient {
         return apiClient.getMyBoards(key, token);
     }
 
-    public void subscribeToModel(String modelId, String webhookId, String key, String token) {
-        String callbackUrl = webhookBaseUrl + "/" + webhookId;
-        apiClient.createWebhook(callbackUrl, modelId, key, token);
+    public Webhook subscribeToModel(String modelId, String webhookPath, String key, String token) {
+        String callbackUrl = webhookBaseUrl + "/" + webhookPath;
+        return apiClient.createWebhook(callbackUrl, modelId, key, token);
+    }
+
+    public void unsubscribeFromModel(String webhookId, String key, String token) {
+        apiClient.deleteWebhook(webhookId, key, token);
     }
 }

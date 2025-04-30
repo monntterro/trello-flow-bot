@@ -1,10 +1,9 @@
 package com.monntterro.trelloflowbot.core.api;
 
 import com.monntterro.trelloflowbot.core.model.Board;
+import com.monntterro.trelloflowbot.core.model.Webhook;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,8 +15,13 @@ public interface TrelloApiClient {
                             @RequestParam("token") String token);
 
     @PostMapping("/webhooks/")
-    void createWebhook(@RequestParam("callbackURL") String callbackURL,
-                       @RequestParam("idModel") String idModel,
+    Webhook createWebhook(@RequestParam("callbackURL") String callbackURL,
+                          @RequestParam("idModel") String idModel,
+                          @RequestParam("key") String key,
+                          @RequestParam("token") String token);
+
+    @DeleteMapping("/webhooks/{id}")
+    void deleteWebhook(@PathVariable("id") String id,
                        @RequestParam("key") String key,
                        @RequestParam("token") String token);
 }
