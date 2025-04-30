@@ -19,7 +19,6 @@ public class WebhookUpdateController {
     @PostMapping("/{id}")
     public ResponseEntity<?> handleUpdate(@PathVariable("id") String webhookId,
                                           @RequestBody TrelloUpdate trelloUpdate) {
-        System.out.println(webhookId);
         trelloUpdateHandler.handle(trelloUpdate, webhookId);
         return ResponseEntity.ok().build();
     }

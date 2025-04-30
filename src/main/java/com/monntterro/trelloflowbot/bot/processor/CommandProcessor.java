@@ -1,10 +1,9 @@
 package com.monntterro.trelloflowbot.bot.processor;
 
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
-import com.monntterro.trelloflowbot.bot.entity.State;
-import com.monntterro.trelloflowbot.bot.entity.User;
-import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
-import com.monntterro.trelloflowbot.bot.model.callback.Type;
+import com.monntterro.trelloflowbot.bot.entity.user.State;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
+import com.monntterro.trelloflowbot.bot.model.callback.CallbackType;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
@@ -34,7 +33,7 @@ public class CommandProcessor {
 
     private void menuCommand(Message message) {
         String text = "Меню";
-        String callbackData = JsonParser.create().with("type", Type.MY_BOARDS).toJson();
+        String callbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String callbackDataId = dataCache.put(callbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(row(button("Мои доски", callbackDataId)));
@@ -44,7 +43,7 @@ public class CommandProcessor {
     private void cancelCommand(Message message) {
         long telegramId = message.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
         user.setState(State.IDLE);
         userService.save(user);
 
@@ -61,7 +60,7 @@ public class CommandProcessor {
     private void registrationCommand(Message message) {
         long telegramId = message.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
         user.setState(State.REGISTRATION);
         userService.save(user);
 

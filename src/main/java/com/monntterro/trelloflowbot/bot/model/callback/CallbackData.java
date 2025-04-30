@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CallbackData {
-    public Type type;
+    public CallbackType callbackType;
     public String data;
 
     public static CallbackData from(String data) {
         String callbackType = JsonParser.read(data, "type", String.class);
-        Type type = Type.valueOf(callbackType);
+        CallbackType type = CallbackType.valueOf(callbackType);
         return new CallbackData(type, data);
     }
 }

@@ -1,7 +1,6 @@
 package com.monntterro.trelloflowbot.bot.service;
 
-import com.monntterro.trelloflowbot.bot.entity.User;
-import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class UserService {
 
     public void updateChatId(long telegramId, long chatId) {
         User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
         user.setChatId(chatId);
         userRepository.save(user);
     }

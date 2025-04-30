@@ -1,8 +1,7 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
-import com.monntterro.trelloflowbot.bot.entity.State;
-import com.monntterro.trelloflowbot.bot.entity.User;
-import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.entity.user.State;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.processor.CommandProcessor;
 import com.monntterro.trelloflowbot.bot.processor.RegistrationProcessor;
 import com.monntterro.trelloflowbot.bot.service.UserService;
@@ -35,7 +34,7 @@ public class MessageHandler {
 
         if (userService.existsByTelegramId(telegramId)) {
             User user = userService.findByTelegramId(telegramId)
-                    .orElseThrow(() -> new UserNotFoundException("User with telegramId %d not found".formatted(telegramId)));
+                    .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
             if (user.getChatId() != chatId) {
                 userService.updateChatId(telegramId, chatId);
             }

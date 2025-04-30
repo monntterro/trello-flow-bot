@@ -1,9 +1,14 @@
-package com.monntterro.trelloflowbot.bot.entity;
+package com.monntterro.trelloflowbot.bot.entity.user;
 
 
 import com.monntterro.trelloflowbot.bot.converter.EncryptedStringConverter;
+import com.monntterro.trelloflowbot.bot.entity.TrelloWebhook;
+import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,4 +40,10 @@ public class User {
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "trello_api_token")
     private String trelloApiToken;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<TrelloModel> trelloModels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<TrelloWebhook> trelloWebhooks = new ArrayList<>();
 }

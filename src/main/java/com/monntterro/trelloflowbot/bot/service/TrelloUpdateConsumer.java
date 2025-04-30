@@ -1,7 +1,6 @@
 package com.monntterro.trelloflowbot.bot.service;
 
-import com.monntterro.trelloflowbot.bot.entity.User;
-import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
@@ -21,7 +20,7 @@ public class TrelloUpdateConsumer {
 
         long userId = Long.parseLong(webhookId);
         User user = userService.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User with id %d not found".formatted(userId)));
+                .orElseThrow(() -> new RuntimeException("User with id %d not found".formatted(userId)));
 
         notifyUsers(user, trelloUpdate);
     }
