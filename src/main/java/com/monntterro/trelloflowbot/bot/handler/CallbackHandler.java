@@ -1,5 +1,6 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
+import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
@@ -31,7 +32,12 @@ public class CallbackHandler {
     private final TrelloModelService trelloModelService;
 
     public void handle(CallbackQuery callbackQuery) {
-        String jsonData = dataCache.getAndRemove(callbackQuery.getData());
+        String callbackQueryData = callbackQuery.getData();
+        if (!dataCache.contains(callbackQueryData)) {
+            unsupportedMessage(callbackQuery);
+            return;
+        }
+        String jsonData = dataCache.getAndRemove(callbackQueryData);
         CallbackData callbackData = CallbackData.from(jsonData);
 
         switch (callbackData.getCallbackType()) {
@@ -42,12 +48,26 @@ public class CallbackHandler {
         }
     }
 
+    private void unsupportedMessage(CallbackQuery callbackQuery) {
+        String text = "Это сообщение уже не поддерживается, воспользуйтесь командой /menu\\.";
+        long chatId = callbackQuery.getMessage().getChatId();
+        Integer messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId);
+    }
+
     private void unsubscribeFromModel(CallbackQuery callbackQuery, String data) {
         long telegramId = callbackQuery.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
         String modelId = JsonParser.read(data, "modelId", String.class);
-        trelloClientFacade.unsubscribeFromModel(modelId, user);
+        boolean isSuccess = trelloClientFacade.unsubscribeFromModel(modelId, user);
+        if (!isSuccess) {
+            String text = "Вы не подписаны на эту доску\\. Подписаться можно в меню\\.";
+            long chatId = callbackQuery.getMessage().getChatId();
+            int messageId = callbackQuery.getMessage().getMessageId();
+            bot.editMessage(text, chatId, messageId);
+            return;
+        }
 
         String text = "Вы отписались от доски\\. Теперь вы не будете получать уведомления об изменениях на этой доске\\.";
         long chatId = callbackQuery.getMessage().getChatId();
@@ -55,7 +75,9 @@ public class CallbackHandler {
         String myBoardsCallbackData = JsonParser.create()
                 .with("type", CallbackType.MY_BOARDS)
                 .toJson();
-        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+
+        Bucket bucket = dataCache.createBucket();
+        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(row(button("Назад", myBoardsCallbackDataId)));
         bot.editMessage(text, chatId, messageId, markup);
     }
@@ -67,7 +89,14 @@ public class CallbackHandler {
 
         String modelId = JsonParser.read(data, "modelId", String.class);
         String webhookPath = String.valueOf(user.getId());
-        trelloClientFacade.subscribeToModel(modelId, webhookPath, user);
+        boolean isSuccess = trelloClientFacade.subscribeToModel(modelId, webhookPath, user);
+        if (!isSuccess) {
+            String text = "Вы уже подписаны на эту доску\\. Отписаться можно в меню\\.";
+            long chatId = callbackQuery.getMessage().getChatId();
+            int messageId = callbackQuery.getMessage().getMessageId();
+            bot.editMessage(text, chatId, messageId);
+            return;
+        }
 
         String text = "Вы подписались на доску\\. Теперь вы будет получать уведомление об изменениях на этой доске\\.";
         long chatId = callbackQuery.getMessage().getChatId();
@@ -75,7 +104,9 @@ public class CallbackHandler {
         String myBoardsCallbackData = JsonParser.create()
                 .with("type", CallbackType.MY_BOARDS)
                 .toJson();
-        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+
+        Bucket bucket = dataCache.createBucket();
+        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(row(button("Назад", myBoardsCallbackDataId)));
         bot.editMessage(text, chatId, messageId, markup);
     }
@@ -93,25 +124,26 @@ public class CallbackHandler {
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
 
         List<InlineKeyboardRow> rows = new ArrayList<>();
+        Bucket bucket = dataCache.createBucket();
         if (trelloModel.isSubscribed()) {
             String unsubscribeCallbackData = JsonParser.create()
                     .with("type", CallbackType.UNSUBSCRIBE)
                     .with("modelId", modelId)
                     .toJson();
-            String unsubscribeCallbackDataId = dataCache.put(unsubscribeCallbackData);
+            String unsubscribeCallbackDataId = bucket.put(unsubscribeCallbackData);
             rows.add(row(button("Отписаться", unsubscribeCallbackDataId)));
         } else {
             String subscribeCallbackData = JsonParser.create()
                     .with("type", CallbackType.SUBSCRIBE)
                     .with("modelId", modelId)
                     .toJson();
-            String subscribeCallbackDataId = dataCache.put(subscribeCallbackData);
+            String subscribeCallbackDataId = bucket.put(subscribeCallbackData);
             rows.add(row(button("Подписаться", subscribeCallbackDataId)));
         }
         String myBoardsCallbackData = JsonParser.create()
                 .with("type", CallbackType.MY_BOARDS)
                 .toJson();
-        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
         rows.add(row(button("Назад к доскам", myBoardsCallbackDataId)));
 
         InlineKeyboardMarkup markup = inlineKeyboard(rows);
@@ -125,6 +157,7 @@ public class CallbackHandler {
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
 
+        Bucket bucket = dataCache.createBucket();
         List<InlineKeyboardRow> rows = trelloClientFacade.getUserBoards(user).stream()
                 .map(board -> {
                     String callbackData = JsonParser.create()
@@ -133,7 +166,7 @@ public class CallbackHandler {
                             .with("name", board.getName())
                             .with("url", board.getUrl())
                             .toJson();
-                    String callbackDataId = dataCache.put(callbackData);
+                    String callbackDataId = bucket.put(callbackData);
                     String text = "%s %s".formatted(board.getName(), board.isSubscribed() ? "✅" : "❌");
                     return row(button(text, callbackDataId));
                 })

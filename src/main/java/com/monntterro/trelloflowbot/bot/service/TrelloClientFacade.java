@@ -39,11 +39,14 @@ public class TrelloClientFacade {
         return trelloModelService.saveAll(newTrelloModels);
     }
 
-    public void subscribeToModel(String modelId, String webhookPath, User user) {
-        Webhook webhook = trelloClient.subscribeToModel(modelId, webhookPath, user.getTrelloApiKey(), user.getTrelloApiToken());
-
+    public boolean subscribeToModel(String modelId, String webhookPath, User user) {
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
+        if (trelloModel.isSubscribed()) {
+            return false;
+        }
+
+        Webhook webhook = trelloClient.subscribeToModel(modelId, webhookPath, user.getTrelloApiKey(), user.getTrelloApiToken());
         trelloModel.setSubscribed(true);
         trelloModelService.save(trelloModel);
 
@@ -53,11 +56,15 @@ public class TrelloClientFacade {
                 .trelloModel(trelloModel)
                 .build();
         trelloWebhookRepository.save(trelloWebhook);
+        return true;
     }
 
-    public void unsubscribeFromModel(String modelId, User user) {
+    public boolean unsubscribeFromModel(String modelId, User user) {
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
+        if (!trelloModel.isSubscribed()) {
+            return false;
+        }
         trelloModel.setSubscribed(false);
         trelloModelService.save(trelloModel);
 
@@ -65,5 +72,6 @@ public class TrelloClientFacade {
                 .orElseThrow(() -> new RuntimeException("Trello webhook not found"));
         trelloWebhookRepository.delete(trelloWebhook);
         trelloClient.unsubscribeFromModel(trelloWebhook.getId(), user.getTrelloApiKey(), user.getTrelloApiToken());
+        return true;
     }
 }
