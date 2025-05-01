@@ -14,6 +14,7 @@ import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
+import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.textLink;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class CallbackHandler {
     }
 
     private void unsupportedMessage(CallbackQuery callbackQuery) {
-        String text = "Это сообщение уже не поддерживается, воспользуйтесь командой /menu\\.";
+        String text = "Это сообщение уже не поддерживается, воспользуйтесь командой /menu.";
         long chatId = callbackQuery.getMessage().getChatId();
         Integer messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId);
@@ -62,14 +64,14 @@ public class CallbackHandler {
         String modelId = JsonParser.read(data, "modelId", String.class);
         boolean isSuccess = trelloClientFacade.unsubscribeFromModel(modelId, user);
         if (!isSuccess) {
-            String text = "Вы не подписаны на эту доску\\. Подписаться можно в меню\\.";
+            String text = "Вы не подписаны на эту доску. Подписаться можно в меню.";
             long chatId = callbackQuery.getMessage().getChatId();
             int messageId = callbackQuery.getMessage().getMessageId();
             bot.editMessage(text, chatId, messageId);
             return;
         }
 
-        String text = "Вы отписались от доски\\. Теперь вы не будете получать уведомления об изменениях на этой доске\\.";
+        String text = "Вы отписались от доски. Теперь вы не будете получать уведомления об изменениях на этой доске.";
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         String myBoardsCallbackData = JsonParser.create()
@@ -91,14 +93,14 @@ public class CallbackHandler {
         String webhookPath = String.valueOf(user.getId());
         boolean isSuccess = trelloClientFacade.subscribeToModel(modelId, webhookPath, user);
         if (!isSuccess) {
-            String text = "Вы уже подписаны на эту доску\\. Отписаться можно в меню\\.";
+            String text = "Вы уже подписаны на эту доску. Отписаться можно в меню.";
             long chatId = callbackQuery.getMessage().getChatId();
             int messageId = callbackQuery.getMessage().getMessageId();
             bot.editMessage(text, chatId, messageId);
             return;
         }
 
-        String text = "Вы подписались на доску\\. Теперь вы будет получать уведомление об изменениях на этой доске\\.";
+        String text = "Вы подписались на доску. Теперь вы будет получать уведомление об изменениях на этой доске.";
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         String myBoardsCallbackData = JsonParser.create()
@@ -114,7 +116,8 @@ public class CallbackHandler {
     private void getBoard(CallbackQuery callbackQuery, String data) {
         String boardUrl = JsonParser.read(data, "url", String.class);
         String boardName = JsonParser.read(data, "name", String.class);
-        String text = "Выбранная доска\\: [%s](%s)".formatted(boardName, boardUrl);
+        String text = "Выбранная доска: " + boardName;
+        List<MessageEntity> messageEntities = List.of(textLink(boardName, boardUrl, 17));
 
         long telegramId = callbackQuery.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
@@ -149,7 +152,7 @@ public class CallbackHandler {
         InlineKeyboardMarkup markup = inlineKeyboard(rows);
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
-        bot.editMessage(text, chatId, messageId, markup);
+        bot.editMessage(text, chatId, messageId, messageEntities, markup);
     }
 
     private void getMyBoards(CallbackQuery callbackQuery) {
