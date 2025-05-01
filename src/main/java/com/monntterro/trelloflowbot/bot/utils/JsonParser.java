@@ -44,11 +44,7 @@ public class JsonParser {
     public static <T> T read(String json, String name, Class<T> clazz) {
         try {
             JsonNode node = objectMapper.readTree(json);
-            JsonNode field = node.get(name);
-            if (field.isObject()) {
-                return objectMapper.treeToValue(field, clazz);
-            }
-            return objectMapper.treeToValue(field, clazz);
+            return objectMapper.treeToValue(node.get(name), clazz);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to read JSON from String", e);
         }

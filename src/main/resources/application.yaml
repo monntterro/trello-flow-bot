@@ -33,5 +33,7 @@ trello:
   webhook:
     baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
 telegram:
+  callback:
+    expiration: 1m
   bot:
     token: ${BOT_TOKEN}

@@ -1,5 +1,6 @@
 package com.monntterro.trelloflowbot.bot.processor;
 
+import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.user.State;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
@@ -34,7 +35,8 @@ public class CommandProcessor {
     private void menuCommand(Message message) {
         String text = "Меню";
         String callbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
-        String callbackDataId = dataCache.put(callbackData);
+        Bucket bucket = dataCache.createBucket();
+        String callbackDataId = bucket.put(callbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(row(button("Мои доски", callbackDataId)));
         bot.sendMessage(text, message.getChatId(), markup);
