@@ -49,12 +49,12 @@ public class CommandProcessor {
         user.setState(State.IDLE);
         userService.save(user);
 
-        String text = "Регистрация отменена\\.";
+        String text = "Регистрация отменена.";
         bot.sendMessage(text, message.getChatId());
     }
 
     private void startCommand(Message message) {
-        String text = "Привет\\!";
+        String text = "Привет!";
         bot.sendMessage(text, message.getChatId());
         registrationCommand(message);
     }
@@ -66,7 +66,7 @@ public class CommandProcessor {
         user.setState(State.REGISTRATION);
         userService.save(user);
 
-        String text = "Пришли мне ключ и через запятую токен Trello API\\. Для отмены пришли команду /cancel";
+        String text = "Пришли мне ключ и через запятую токен Trello API. Для отмены пришли команду /cancel";
         bot.sendMessage(text, message.getChatId());
     }
 }

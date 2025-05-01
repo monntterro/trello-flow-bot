@@ -9,13 +9,15 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -49,7 +51,6 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
-                .parseMode(ParseMode.MARKDOWNV2)
                 .build();
         try {
             telegramClient.execute(sendMessage);
@@ -62,7 +63,6 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
-                .parseMode(ParseMode.MARKDOWNV2)
                 .replyMarkup(markup)
                 .build();
         try {
@@ -77,7 +77,6 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
                 .text(text)
                 .chatId(chatId)
                 .messageId(messageId)
-                .parseMode(ParseMode.MARKDOWNV2)
                 .replyMarkup(markup)
                 .build();
         try {
@@ -92,8 +91,36 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
                 .text(text)
                 .chatId(chatId)
                 .messageId(messageId)
-                .parseMode(ParseMode.MARKDOWNV2)
                 .replyMarkup(null)
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void editMessage(String text, long chatId, int messageId, List<MessageEntity> messageEntities,
+                            InlineKeyboardMarkup markup) {
+        EditMessageText sendMessage = EditMessageText.builder()
+                .text(text)
+                .chatId(chatId)
+                .messageId(messageId)
+                .replyMarkup(markup)
+                .entities(messageEntities)
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void sendMessage(String string, long chatId, List<MessageEntity> entities) {
+        SendMessage sendMessage = SendMessage.builder()
+                .text(string)
+                .chatId(chatId)
+                .entities(entities)
                 .build();
         try {
             telegramClient.execute(sendMessage);

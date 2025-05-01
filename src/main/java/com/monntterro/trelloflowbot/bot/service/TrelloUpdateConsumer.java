@@ -6,6 +6,13 @@ import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.MessageEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.bold;
+import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.textLink;
 
 @Service
 @RequiredArgsConstructor
@@ -26,32 +33,56 @@ public class TrelloUpdateConsumer {
     }
 
     private void notifyUsers(User user, TrelloUpdate trelloUpdate) {
-        String text = generateText(trelloUpdate);
-        bot.sendMessage(text, user.getChatId());
-    }
-
-    private String generateText(TrelloUpdate trelloUpdate) {
-        StringBuilder text = new StringBuilder();
-        text.append("*Обновление в Trello:\n*");
-        text.append("*Пользователь:* %s\n".formatted(trelloUpdate.getAction().getMemberCreator().getFullName()));
-        text.append("*Действие:* ");
+        String memberName = trelloUpdate.getAction().getMemberCreator().getFullName();
         Data data = trelloUpdate.getAction().getData();
+        List<MessageEntity> entities = new ArrayList<>();
+
+        StringBuilder text = new StringBuilder("Обновление в Trello:\n");
+        int offset = 0;
+
+        entities.add(bold("Обновление в Trello:", offset));
+        offset += "Обновление в Trello:".length() + 1;
+
+        text.append("Пользователь: ").append(memberName).append("\n");
+        entities.add(bold("Пользователь:", offset));
+        offset += "Пользователь: ".length() + memberName.length() + 1;
+
+        text.append("Действие: ");
+        entities.add(bold("Действие:", offset));
+        offset += "Действие: ".length();
+
         switch (trelloUpdate.getAction().getDisplay().getTranslationKey()) {
             case ACTION_COMMENT_ON_CARD -> {
-                text.append("прокомментировал карточку [%s](https://trello.com/c/%s)\n*Сообщением:* %s".formatted(
-                        data.getCard().getName(),
-                        data.getCard().getShortLink(),
-                        data.getText()
-                ));
+                String cardName = data.getCard().getName();
+                String cardUrl = "https://trello.com/c/" + data.getCard().getShortLink();
+                String comment = data.getText();
+
+                text.append("прокомментировал карточку ")
+                        .append(cardName)
+                        .append("\nСообщением: ")
+                        .append(comment);
+
+                entities.add(textLink(cardName, cardUrl, offset + "прокомментировал карточку ".length()));
+
+                int messageOffset = offset + "прокомментировал карточку ".length() + cardName.length() + 1;
+                entities.add(bold("Сообщением:", messageOffset));
             }
             case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> {
-                text.append("переместил карточку из *\"%s\"* в *\"%s\"*".formatted(
-                        data.getListBefore().getName(),
-                        data.getListAfter().getName()
-                ));
+                String listBefore = data.getListBefore().getName();
+                String listAfter = data.getListAfter().getName();
+
+                text.append("переместил карточку из \"")
+                        .append(listBefore)
+                        .append("\" в \"")
+                        .append(listAfter)
+                        .append("\"");
+
+                entities.add(bold(listBefore, offset + "переместил карточку из \"".length()));
+                entities.add(bold(listAfter, offset + "переместил карточку из \"".length() +
+                                             listBefore.length() + "\" в \"".length()));
             }
         }
 
-        return text.toString();
+        bot.sendMessage(text.toString(), user.getChatId(), entities);
     }
 }
