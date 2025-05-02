@@ -41,6 +41,9 @@ public class User {
     @Column(name = "trello_api_token")
     private String trelloApiToken;
 
+    @Column(name = "language")
+    private String language;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TrelloModel> trelloModels = new ArrayList<>();
 

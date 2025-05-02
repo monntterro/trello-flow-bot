@@ -11,6 +11,7 @@ import com.monntterro.trelloflowbot.bot.service.TrelloClientFacade;
 import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
+import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -20,6 +21,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
 import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.textLink;
@@ -32,6 +35,7 @@ public class CallbackHandler {
     private final CallbackDataCache dataCache;
     private final TrelloClientFacade trelloClientFacade;
     private final TrelloModelService trelloModelService;
+    private final MessageResource messageResource;
 
     public void handle(CallbackQuery callbackQuery) {
         String callbackQueryData = callbackQuery.getData();
@@ -43,15 +47,112 @@ public class CallbackHandler {
         CallbackData callbackData = CallbackData.from(jsonData);
 
         switch (callbackData.getCallbackType()) {
+            case MENU -> menu(callbackQuery);
             case MY_BOARDS -> getMyBoards(callbackQuery);
             case GET_BOARD -> getBoard(callbackQuery, callbackData.getData());
             case SUBSCRIBE -> subscribeToModel(callbackQuery, callbackData.getData());
             case UNSUBSCRIBE -> unsubscribeFromModel(callbackQuery, callbackData.getData());
+            case CHOOSE_LANGUAGE -> chooseLanguage(callbackQuery);
+            case SWITCH_LANGUAGE -> switchLanguage(callbackQuery, callbackData.getData());
+            case SETTINGS -> setting(callbackQuery);
         }
     }
 
+    private void menu(CallbackQuery callbackQuery) {
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
+        String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+        Bucket bucket = dataCache.createBucket();
+        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
+        String settingsCallbackDataId = bucket.put(settingsCallbackData);
+
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button(messageResource.getMessage("menu.my.board", user.getLanguage()), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.settings", user.getLanguage()), settingsCallbackDataId))
+        );
+
+        String text = "Меню";
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private void chooseLanguage(CallbackQuery callbackQuery) {
+        String text = "Выберите дальнейший язык";
+        long chatId = callbackQuery.getMessage().getChatId();
+
+        String ruLanguageCallbackData = JsonParser.create()
+                .with("type", CallbackType.SWITCH_LANGUAGE)
+                .with("language", "ru-RU")
+                .toJson();
+        String enLanguageCallbackData = JsonParser.create()
+                .with("type", CallbackType.SWITCH_LANGUAGE)
+                .with("language", "en-US")
+                .toJson();
+        Bucket bucket = dataCache.createBucket();
+        String ruLanguageCallbackDataId = bucket.put(ruLanguageCallbackData);
+        String enLanguageCallbackDataId = bucket.put(enLanguageCallbackData);
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button("Русский", ruLanguageCallbackDataId)),
+                row(button("English", enLanguageCallbackDataId))
+        );
+
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private void setting(CallbackQuery callbackQuery) {
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String text = messageResource.getMessage("settings.text", user.getLanguage());
+        String chooseLanguageCallbackData = JsonParser.create()
+                .with("type", CallbackType.CHOOSE_LANGUAGE)
+                .toJson();
+        String menuCallbackData = JsonParser.create()
+                .with("type", CallbackType.MENU)
+                .toJson();
+
+        Bucket bucket = dataCache.createBucket();
+        String chooseLanguageCallbackDataId = bucket.put(chooseLanguageCallbackData);
+        String menuCallbackDataId = bucket.put(menuCallbackData);
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button(messageResource.getMessage("settings.language.change.text", user.getLanguage()), chooseLanguageCallbackDataId)),
+                row(button(messageResource.getMessage("button.back", user.getLanguage()), menuCallbackDataId))
+        );
+
+        long chatId = callbackQuery.getMessage().getChatId();
+        Integer messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private void switchLanguage(CallbackQuery callbackQuery, String data) {
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String language = JsonParser.read(data, "language", String.class);
+        user.setLanguage(language);
+        userService.save(user);
+
+        Locale locale = Locale.forLanguageTag(language);
+        String languageName = locale.getDisplayName(locale);
+        String text = messageResource.getMessage("settings.language.change.success", user.getLanguage(), languageName);
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId);
+    }
+
     private void unsupportedMessage(CallbackQuery callbackQuery) {
-        String text = "Это сообщение уже не поддерживается, воспользуйтесь командой /menu.";
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String text = messageResource.getMessage("callback.unsupported", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
         Integer messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId);
@@ -64,14 +165,14 @@ public class CallbackHandler {
         String modelId = JsonParser.read(data, "modelId", String.class);
         boolean isSuccess = trelloClientFacade.unsubscribeFromModel(modelId, user);
         if (!isSuccess) {
-            String text = "Вы не подписаны на эту доску. Подписаться можно в меню.";
+            String text = messageResource.getMessage("user.unsubscribe.error", user.getLanguage());
             long chatId = callbackQuery.getMessage().getChatId();
             int messageId = callbackQuery.getMessage().getMessageId();
             bot.editMessage(text, chatId, messageId);
             return;
         }
 
-        String text = "Вы отписались от доски. Теперь вы не будете получать уведомления об изменениях на этой доске.";
+        String text = messageResource.getMessage("user.unsubscribe.success", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         String myBoardsCallbackData = JsonParser.create()
@@ -80,7 +181,7 @@ public class CallbackHandler {
 
         Bucket bucket = dataCache.createBucket();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
-        InlineKeyboardMarkup markup = inlineKeyboard(row(button("Назад", myBoardsCallbackDataId)));
+        InlineKeyboardMarkup markup = inlineKeyboard(row(button(messageResource.getMessage("button.back", user.getLanguage()), myBoardsCallbackDataId)));
         bot.editMessage(text, chatId, messageId, markup);
     }
 
@@ -93,14 +194,14 @@ public class CallbackHandler {
         String webhookPath = String.valueOf(user.getId());
         boolean isSuccess = trelloClientFacade.subscribeToModel(modelId, webhookPath, user);
         if (!isSuccess) {
-            String text = "Вы уже подписаны на эту доску. Отписаться можно в меню.";
+            String text = messageResource.getMessage("user.subscribe.error", user.getLanguage());
             long chatId = callbackQuery.getMessage().getChatId();
             int messageId = callbackQuery.getMessage().getMessageId();
             bot.editMessage(text, chatId, messageId);
             return;
         }
 
-        String text = "Вы подписались на доску. Теперь вы будет получать уведомление об изменениях на этой доске.";
+        String text = messageResource.getMessage("user.subscribe.success", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         String myBoardsCallbackData = JsonParser.create()
@@ -109,19 +210,21 @@ public class CallbackHandler {
 
         Bucket bucket = dataCache.createBucket();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
-        InlineKeyboardMarkup markup = inlineKeyboard(row(button("Назад", myBoardsCallbackDataId)));
+        InlineKeyboardMarkup markup = inlineKeyboard(row(button(messageResource.getMessage("button.back", user.getLanguage()), myBoardsCallbackDataId)));
         bot.editMessage(text, chatId, messageId, markup);
     }
 
     private void getBoard(CallbackQuery callbackQuery, String data) {
         String boardUrl = JsonParser.read(data, "url", String.class);
         String boardName = JsonParser.read(data, "name", String.class);
-        String text = "Выбранная доска: " + boardName;
-        List<MessageEntity> messageEntities = List.of(textLink(boardName, boardUrl, 17));
 
         long telegramId = callbackQuery.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String text = messageResource.getMessage("menu.chosen.board", user.getLanguage(), boardName);
+        List<MessageEntity> messageEntities = List.of(textLink(boardName, boardUrl, text.length() - boardName.length()));
+
         String modelId = JsonParser.read(data, "modelId", String.class);
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
@@ -134,20 +237,20 @@ public class CallbackHandler {
                     .with("modelId", modelId)
                     .toJson();
             String unsubscribeCallbackDataId = bucket.put(unsubscribeCallbackData);
-            rows.add(row(button("Отписаться", unsubscribeCallbackDataId)));
+            rows.add(row(button(messageResource.getMessage("model.unsubscribe", user.getLanguage()), unsubscribeCallbackDataId)));
         } else {
             String subscribeCallbackData = JsonParser.create()
                     .with("type", CallbackType.SUBSCRIBE)
                     .with("modelId", modelId)
                     .toJson();
             String subscribeCallbackDataId = bucket.put(subscribeCallbackData);
-            rows.add(row(button("Подписаться", subscribeCallbackDataId)));
+            rows.add(row(button(messageResource.getMessage("model.subscribe", user.getLanguage()), subscribeCallbackDataId)));
         }
         String myBoardsCallbackData = JsonParser.create()
                 .with("type", CallbackType.MY_BOARDS)
                 .toJson();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
-        rows.add(row(button("Назад к доскам", myBoardsCallbackDataId)));
+        rows.add(row(button(messageResource.getMessage("button.back", user.getLanguage()), myBoardsCallbackDataId)));
 
         InlineKeyboardMarkup markup = inlineKeyboard(rows);
         long chatId = callbackQuery.getMessage().getChatId();
@@ -173,9 +276,14 @@ public class CallbackHandler {
                     String text = "%s %s".formatted(board.getName(), board.isSubscribed() ? "✅" : "❌");
                     return row(button(text, callbackDataId));
                 })
-                .toList();
+                .collect(Collectors.toList());
+        String menuCallbackData = JsonParser.create()
+                .with("type", CallbackType.MENU)
+                .toJson();
+        String menuCallbackDataId = bucket.put(menuCallbackData);
+        rows.add(row(button(messageResource.getMessage("button.back", user.getLanguage()), menuCallbackDataId)));
 
-        String text = "Выберите доску:";
+        String text = messageResource.getMessage("menu.choose.board", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId, inlineKeyboard(rows));

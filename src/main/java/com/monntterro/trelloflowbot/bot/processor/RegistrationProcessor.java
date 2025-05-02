@@ -4,6 +4,7 @@ import com.monntterro.trelloflowbot.bot.entity.user.State;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
+import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.core.api.TrelloClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ public class RegistrationProcessor {
     private final UserService userService;
     private final TrelloClient trelloClient;
     private final CommandProcessor commandProcessor;
+    private final MessageResource messageResource;
 
     public void register(Message message, User user) {
         String messageText = message.getText();
@@ -26,7 +28,7 @@ public class RegistrationProcessor {
 
         String[] keyAndToken = messageText.split(",\\s+", 2);
         if (keyAndToken.length != 2) {
-            String text = "Неверный формат. Попробуйте еще раз.";
+            String text = messageResource.getMessage("registration.error.wrong_format", user.getLanguage());
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -34,7 +36,7 @@ public class RegistrationProcessor {
         String key = keyAndToken[0];
         String token = keyAndToken[1];
         if (!trelloClient.isValidKeyAndToken(key, token)) {
-            String text = "Неверный ключ или токен. Попробуйте еще раз.";
+            String text = messageResource.getMessage("registration.error.invalid_key_or_token", user.getLanguage());
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -43,7 +45,7 @@ public class RegistrationProcessor {
         user.setTrelloApiKey(key);
         user.setTrelloApiToken(token);
         userService.save(user);
-        String text = "Регистрация прошла успешно! Теперь вы можете использовать бота. Воспользуйся командой /menu, чтобы увидеть доступные команды.";
+        String text = messageResource.getMessage("registration.success", user.getLanguage());
         bot.sendMessage(text, message.getChatId());
     }
 }

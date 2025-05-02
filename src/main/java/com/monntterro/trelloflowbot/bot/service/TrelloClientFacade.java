@@ -20,11 +20,6 @@ public class TrelloClientFacade {
     private final TrelloClient trelloClient;
 
     public List<TrelloModel> getUserBoards(User user) {
-        List<TrelloModel> trelloModels = trelloModelService.findAllByUserAndType(user, Type.BOARD);
-        if (!trelloModels.isEmpty()) {
-            return trelloModels;
-        }
-
         List<TrelloModel> newTrelloModels = trelloClient.getMyBoards(user.getTrelloApiKey(), user.getTrelloApiToken())
                 .stream()
                 .map(board -> TrelloModel.builder()
