@@ -6,6 +6,7 @@ CREATE TABLE users
     state            VARCHAR(255) NOT NULL,
     trello_api_key   VARCHAR(255),
     trello_api_token VARCHAR(255),
+    language VARCHAR(255),
 
     CONSTRAINT pk_users PRIMARY KEY (id)
 );
