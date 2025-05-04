@@ -95,6 +95,6 @@ public class CommandProcessor {
         userService.save(user);
 
         String text = messageResource.getMessage("registration.text", user.getLanguage());
-        bot.sendMessage(text, message.getChatId());
+        bot.sendMessageWithMarkdown(text, message.getChatId());
     }
 }

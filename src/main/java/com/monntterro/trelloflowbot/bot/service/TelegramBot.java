@@ -9,6 +9,7 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
@@ -121,6 +122,19 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
                 .text(string)
                 .chatId(chatId)
                 .entities(entities)
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void sendMessageWithMarkdown(String text, Long chatId) {
+        SendMessage sendMessage = SendMessage.builder()
+                .text(text)
+                .chatId(chatId)
+                .parseMode(ParseMode.MARKDOWNV2)
                 .build();
         try {
             telegramClient.execute(sendMessage);
