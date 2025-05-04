@@ -43,7 +43,7 @@ public class TrelloModelService {
                 modelToUpdate.setUrl(trelloModel.getUrl());
                 updatedTrelloModels.add(modelToUpdate);
             } else {
-                trelloModelRepository.save(trelloModel);
+                updatedTrelloModels.add(trelloModel);
             }
         }
         return trelloModelRepository.saveAll(updatedTrelloModels);
