@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -43,9 +44,9 @@ public class CallbackHandler {
             unsupportedMessage(callbackQuery);
             return;
         }
+
         String jsonData = dataCache.getAndRemove(callbackQueryData);
         CallbackData callbackData = CallbackData.from(jsonData);
-
         switch (callbackData.getCallbackType()) {
             case MENU -> menu(callbackQuery);
             case MY_BOARDS -> getMyBoards(callbackQuery);
@@ -74,14 +75,18 @@ public class CallbackHandler {
                 row(button(messageResource.getMessage("menu.settings", user.getLanguage()), settingsCallbackDataId))
         );
 
-        String text = "Меню";
+        String text = messageResource.getMessage("menu.text", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId, markup);
     }
 
     private void chooseLanguage(CallbackQuery callbackQuery) {
-        String text = "Выберите дальнейший язык";
+        long telegramId = callbackQuery.getFrom().getId();
+        User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+
+        String text = messageResource.getMessage("settings.language.change.choose", user.getLanguage());
         long chatId = callbackQuery.getMessage().getChatId();
 
         String ruLanguageCallbackData = JsonParser.create()
@@ -92,12 +97,17 @@ public class CallbackHandler {
                 .with("type", CallbackType.SWITCH_LANGUAGE)
                 .with("language", "en-US")
                 .toJson();
+        String menuCallbackData = JsonParser.create()
+                .with("type", CallbackType.SETTINGS)
+                .toJson();
         Bucket bucket = dataCache.createBucket();
         String ruLanguageCallbackDataId = bucket.put(ruLanguageCallbackData);
         String enLanguageCallbackDataId = bucket.put(enLanguageCallbackData);
+        String menuCallbackDataId = bucket.put(menuCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button("Русский", ruLanguageCallbackDataId)),
-                row(button("English", enLanguageCallbackDataId))
+                row(button("English", enLanguageCallbackDataId)),
+                row(button(messageResource.getMessage("button.back", user.getLanguage()), menuCallbackDataId))
         );
 
         int messageId = callbackQuery.getMessage().getMessageId();
@@ -142,9 +152,17 @@ public class CallbackHandler {
         Locale locale = Locale.forLanguageTag(language);
         String languageName = locale.getDisplayName(locale);
         String text = messageResource.getMessage("settings.language.change.success", user.getLanguage(), languageName);
+
+        String myBoardsCallbackData = JsonParser.create()
+                .with("type", CallbackType.MY_BOARDS)
+                .toJson();
+        Bucket bucket = dataCache.createBucket();
+        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
+        InlineKeyboardMarkup markup = inlineKeyboard(row(button(messageResource.getMessage("button.back", user.getLanguage()), myBoardsCallbackDataId)));
+
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
-        bot.editMessage(text, chatId, messageId);
+        bot.editMessage(text, chatId, messageId, markup);
     }
 
     private void unsupportedMessage(CallbackQuery callbackQuery) {
@@ -263,8 +281,17 @@ public class CallbackHandler {
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
 
+        if (user.getTrelloApiKey() == null || user.getTrelloApiKey().isBlank()) {
+            String text = messageResource.getMessage("user.not.registered", user.getLanguage());
+            long chatId = callbackQuery.getMessage().getChatId();
+            int messageId = callbackQuery.getMessage().getMessageId();
+            bot.editMessage(text, chatId, messageId);
+            return;
+        }
+
         Bucket bucket = dataCache.createBucket();
         List<InlineKeyboardRow> rows = trelloClientFacade.getUserBoards(user).stream()
+                .sorted(Comparator.comparing(TrelloModel::isSubscribed).reversed())
                 .map(board -> {
                     String callbackData = JsonParser.create()
                             .with("type", CallbackType.GET_BOARD)

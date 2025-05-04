@@ -25,13 +25,13 @@ public class TrelloClientFacade {
                 .map(board -> TrelloModel.builder()
                         .type(Type.BOARD)
                         .url(board.getShortUrl())
-                        .isSubscribed(false)
                         .user(user)
                         .modelId(board.getId())
                         .name(board.getName())
                         .build())
                 .toList();
-        return trelloModelService.saveAll(newTrelloModels);
+
+        return trelloModelService.saveAllOrUpdate(newTrelloModels, user);
     }
 
     public boolean subscribeToModel(String modelId, String webhookPath, User user) {
