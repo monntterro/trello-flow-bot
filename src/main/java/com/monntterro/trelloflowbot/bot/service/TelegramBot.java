@@ -7,17 +7,21 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -46,6 +50,25 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
     @Override
     public LongPollingUpdateConsumer getUpdatesConsumer() {
         return this;
+    }
+
+    @AfterBotRegistration
+    public void afterBotRegistration() {
+        setCommands();
+    }
+
+    private void setCommands() {
+        List<BotCommand> commands = Arrays.asList(
+                new BotCommand("/menu", "Open menu"),
+                new BotCommand("/change_token_and_key", "Change trello token and key")
+        );
+
+        SetMyCommands setMyCommands = new SetMyCommands(commands);
+        try {
+            telegramClient.execute(setMyCommands);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
     }
 
     public void sendMessage(String text, Long chatId) {

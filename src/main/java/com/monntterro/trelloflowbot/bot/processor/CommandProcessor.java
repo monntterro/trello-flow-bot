@@ -28,7 +28,7 @@ public class CommandProcessor {
         String command = message.getText();
         switch (command) {
             case "/start" -> startCommand(message);
-            case "/registration" -> registrationCommand(message);
+            case "/change_token_and_key" -> changeTrelloTokenAndKey(message);
             case "/cancel" -> cancelCommand(message);
             case "/menu" -> menuCommand(message);
         }
@@ -47,7 +47,7 @@ public class CommandProcessor {
         String settingsCallbackDataId = bucket.put(settingsCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.my.board", user.getLanguage()), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.my.boards", user.getLanguage()), myBoardsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings", user.getLanguage()), settingsCallbackDataId))
         );
         bot.sendMessage(text, message.getChatId(), markup);
@@ -60,7 +60,7 @@ public class CommandProcessor {
         user.setState(State.IDLE);
         userService.save(user);
 
-        String text = messageResource.getMessage("registration.cancel", user.getLanguage());
+        String text = messageResource.getMessage("settings.token_and_key.change.cancel", user.getLanguage());
         bot.sendMessage(text, message.getChatId());
     }
 
@@ -87,14 +87,14 @@ public class CommandProcessor {
         bot.sendMessage(text, chatId, markup);
     }
 
-    private void registrationCommand(Message message) {
+    private void changeTrelloTokenAndKey(Message message) {
         long telegramId = message.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
-        user.setState(State.REGISTRATION);
+        user.setState(State.CHANGE_TRELLO_TOKEN_AND_KEY);
         userService.save(user);
 
-        String text = messageResource.getMessage("registration.text", user.getLanguage());
+        String text = messageResource.getMessage("settings.token_and_key.change.text", user.getLanguage());
         bot.sendMessageWithMarkdown(text, message.getChatId());
     }
 }

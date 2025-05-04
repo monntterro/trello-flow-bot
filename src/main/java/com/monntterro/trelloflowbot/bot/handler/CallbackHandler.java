@@ -71,7 +71,7 @@ public class CallbackHandler {
         String settingsCallbackDataId = bucket.put(settingsCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.my.board", user.getLanguage()), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.my.boards", user.getLanguage()), myBoardsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings", user.getLanguage()), settingsCallbackDataId))
         );
 
