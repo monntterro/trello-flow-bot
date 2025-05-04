@@ -2,5 +2,5 @@ package com.monntterro.trelloflowbot.bot.entity.user;
 
 public enum State {
     IDLE,
-    REGISTRATION
+    CHANGE_TRELLO_TOKEN_AND_KEY
 }

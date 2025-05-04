@@ -24,7 +24,7 @@ public class MessageHandler {
                     commandProcessor.processCommand(message);
                 }
             }
-            case REGISTRATION -> registrationProcessor.register(message, user);
+            case CHANGE_TRELLO_TOKEN_AND_KEY -> registrationProcessor.register(message, user);
         }
     }
 
