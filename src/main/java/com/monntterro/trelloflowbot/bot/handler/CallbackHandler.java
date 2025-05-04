@@ -154,7 +154,7 @@ public class CallbackHandler {
         String text = messageResource.getMessage("settings.language.change.success", user.getLanguage(), languageName);
 
         String myBoardsCallbackData = JsonParser.create()
-                .with("type", CallbackType.MY_BOARDS)
+                .with("type", CallbackType.SETTINGS)
                 .toJson();
         Bucket bucket = dataCache.createBucket();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
