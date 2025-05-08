@@ -8,5 +8,5 @@ public enum CallbackType {
     SETTINGS,
     CHOOSE_LANGUAGE,
     MENU,
-    MY_BOARDS
+    SEND_TRELLO_CREDENTIALS, MY_BOARDS
 }

@@ -28,7 +28,7 @@ public class RegistrationProcessor {
 
         String[] keyAndToken = messageText.split(",\\s+", 2);
         if (keyAndToken.length != 2) {
-            String text = messageResource.getMessage("settings.token_and_key.change.error.wrong_format", user.getLanguage());
+            String text = messageResource.getMessage("settings.token_and_key.set.error.wrong_format");
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -36,7 +36,7 @@ public class RegistrationProcessor {
         String key = keyAndToken[0];
         String token = keyAndToken[1];
         if (!trelloClient.isValidKeyAndToken(key, token)) {
-            String text = messageResource.getMessage("settings.token_and_key.change.error.invalid", user.getLanguage());
+            String text = messageResource.getMessage("settings.token_and_key.set.error.invalid");
             bot.sendMessage(text, message.getChatId());
             return;
         }
@@ -45,7 +45,7 @@ public class RegistrationProcessor {
         user.setTrelloApiKey(key);
         user.setTrelloApiToken(token);
         userService.save(user);
-        String text = messageResource.getMessage("settings.token_and_key.change.success", user.getLanguage());
+        String text = messageResource.getMessage("settings.token_and_key.set.success");
         bot.sendMessage(text, message.getChatId());
     }
 }

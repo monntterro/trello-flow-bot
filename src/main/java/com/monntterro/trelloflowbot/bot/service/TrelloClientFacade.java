@@ -6,6 +6,7 @@ import com.monntterro.trelloflowbot.bot.entity.trellomodel.Type;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
 import com.monntterro.trelloflowbot.core.api.TrelloClient;
+import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
 import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class TrelloClientFacade {
     private final TrelloWebhookRepository trelloWebhookRepository;
     private final TrelloClient trelloClient;
 
-    public List<TrelloModel> getUserBoards(User user) {
+    public List<TrelloModel> getUserBoards(User user) throws AuthenticationException {
         List<TrelloModel> newTrelloModels = trelloClient.getMyBoards(user.getTrelloApiKey(), user.getTrelloApiToken())
                 .stream()
                 .map(board -> TrelloModel.builder()
@@ -34,7 +35,7 @@ public class TrelloClientFacade {
         return trelloModelService.saveAllOrUpdate(newTrelloModels, user);
     }
 
-    public boolean subscribeToModel(String modelId, String webhookPath, User user) {
+    public boolean subscribeToModel(String modelId, String webhookPath, User user) throws AuthenticationException {
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
         if (trelloModel.isSubscribed()) {
@@ -54,7 +55,7 @@ public class TrelloClientFacade {
         return true;
     }
 
-    public boolean unsubscribeFromModel(String modelId, User user) {
+    public boolean unsubscribeFromModel(String modelId, User user) throws AuthenticationException {
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
         if (!trelloModel.isSubscribed()) {
@@ -65,8 +66,8 @@ public class TrelloClientFacade {
 
         TrelloWebhook trelloWebhook = trelloWebhookRepository.findByTrelloModel(trelloModel)
                 .orElseThrow(() -> new RuntimeException("Trello webhook not found"));
-        trelloWebhookRepository.delete(trelloWebhook);
         trelloClient.unsubscribeFromModel(trelloWebhook.getId(), user.getTrelloApiKey(), user.getTrelloApiToken());
+        trelloWebhookRepository.delete(trelloWebhook);
         return true;
     }
 }

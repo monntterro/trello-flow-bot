@@ -59,8 +59,8 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
 
     private void setCommands() {
         List<BotCommand> commands = Arrays.asList(
-                new BotCommand("/menu", "Open menu"),
-                new BotCommand("/change_token_and_key", "Change trello token and key")
+                new BotCommand("/menu", "Открыть меню"),
+                new BotCommand("/set_token_and_key", "Установить токен и ключ Trello")
         );
 
         SetMyCommands setMyCommands = new SetMyCommands(commands);
@@ -140,9 +140,23 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
     }
 
-    public void sendMessage(String string, long chatId, List<MessageEntity> entities) {
+    public void editMessageWithMarkdown(String text, long chatId, int messageId) {
+        EditMessageText sendMessage = EditMessageText.builder()
+                .text(text)
+                .chatId(chatId)
+                .messageId(messageId)
+                .parseMode(ParseMode.MARKDOWNV2)
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void sendMessage(String text, long chatId, List<MessageEntity> entities) {
         SendMessage sendMessage = SendMessage.builder()
-                .text(string)
+                .text(text)
                 .chatId(chatId)
                 .entities(entities)
                 .build();

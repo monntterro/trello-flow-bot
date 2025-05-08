@@ -11,17 +11,10 @@ import java.util.Locale;
 public class MessageResource {
     private final MessageSource messageSource;
 
-    public String getMessage(String code, String language, Object... args) {
+    public String getMessage(String code, Object... args) {
         if (args.length == 0) {
-            return messageSource.getMessage(code, null, toLocale(language));
+            return messageSource.getMessage(code, null, Locale.ROOT);
         }
-        return messageSource.getMessage(code, args, toLocale(language));
-    }
-
-    private Locale toLocale(String language) {
-        if (language == null || language.isEmpty()) {
-            return Locale.ROOT;
-        }
-        return Locale.forLanguageTag(language);
+        return messageSource.getMessage(code, args, Locale.ROOT);
     }
 }

@@ -30,10 +30,14 @@ encryption:
   key: ${ENCRYPTION_KEY}
   salt: ${ENCRYPTION_SALT}
 trello:
+  api:
+    baseUrl: https://api.trello.com/1
   webhook:
     baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
 telegram:
   callback:
     expiration: 1m
+    cleanup:
+      interval.secs: 600
   bot:
     token: ${BOT_TOKEN}
