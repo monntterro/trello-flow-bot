@@ -28,17 +28,14 @@ public class CommandProcessor {
         String command = message.getText();
         switch (command) {
             case "/start" -> startCommand(message);
-            case "/change_token_and_key" -> changeTrelloTokenAndKey(message);
+            case "/set_token_and_key" -> setTrelloTokenAndKey(message);
             case "/cancel" -> cancelCommand(message);
             case "/menu" -> menuCommand(message);
         }
     }
 
     private void menuCommand(Message message) {
-        long telegramId = message.getFrom().getId();
-        User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
-        String text = messageResource.getMessage("menu.text", user.getLanguage());
+        String text = messageResource.getMessage("menu.text");
 
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
@@ -47,8 +44,8 @@ public class CommandProcessor {
         String settingsCallbackDataId = bucket.put(settingsCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.my.boards", user.getLanguage()), myBoardsCallbackDataId)),
-                row(button(messageResource.getMessage("menu.settings", user.getLanguage()), settingsCallbackDataId))
+                row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.settings"), settingsCallbackDataId))
         );
         bot.sendMessage(text, message.getChatId(), markup);
     }
@@ -60,41 +57,26 @@ public class CommandProcessor {
         user.setState(State.IDLE);
         userService.save(user);
 
-        String text = messageResource.getMessage("settings.token_and_key.change.cancel", user.getLanguage());
+        String text = messageResource.getMessage("settings.token_and_key.set.cancel");
         bot.sendMessage(text, message.getChatId());
     }
 
     private void startCommand(Message message) {
         String text = messageResource.getMessage("start.text", "en-US");
         long chatId = message.getChatId();
+        bot.sendMessage(text, chatId);
 
-        String ruLanguageCallbackData = JsonParser.create()
-                .with("type", CallbackType.SWITCH_LANGUAGE)
-                .with("language", "ru-RU")
-                .toJson();
-        String enLanguageCallbackData = JsonParser.create()
-                .with("type", CallbackType.SWITCH_LANGUAGE)
-                .with("language", "en-US")
-                .toJson();
-        Bucket bucket = dataCache.createBucket();
-        String ruLanguageCallbackDataId = bucket.put(ruLanguageCallbackData);
-        String enLanguageCallbackDataId = bucket.put(enLanguageCallbackData);
-        InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button("Русский", ruLanguageCallbackDataId)),
-                row(button("English", enLanguageCallbackDataId))
-        );
-
-        bot.sendMessage(text, chatId, markup);
+        setTrelloTokenAndKey(message);
     }
 
-    private void changeTrelloTokenAndKey(Message message) {
+    private void setTrelloTokenAndKey(Message message) {
         long telegramId = message.getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
         user.setState(State.CHANGE_TRELLO_TOKEN_AND_KEY);
         userService.save(user);
 
-        String text = messageResource.getMessage("settings.token_and_key.change.text", user.getLanguage());
+        String text = messageResource.getMessage("settings.token_and_key.set.text");
         bot.sendMessageWithMarkdown(text, message.getChatId());
     }
 }

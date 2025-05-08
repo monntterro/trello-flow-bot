@@ -24,8 +24,8 @@ public class Bucket {
         return bucketKey + " " + key;
     }
 
-    public String getAndRemove(String key) {
-        return data.remove(key);
+    public String get(String key) {
+        return data.get(key);
     }
 
     private String generateKey() {
