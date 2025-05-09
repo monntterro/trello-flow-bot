@@ -1,18 +1,13 @@
 package com.monntterro.trelloflowbot.bot.service;
 
 import com.monntterro.trelloflowbot.bot.entity.user.User;
+import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.bold;
-import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.textLink;
 
 @Service
 @RequiredArgsConstructor
@@ -26,65 +21,60 @@ public class TrelloUpdateConsumer {
         }
 
         User user = userService.findById(Long.parseLong(webhookId))
-                .orElseThrow(() -> new RuntimeException("User with id %s not found".formatted(webhookId)));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         notifyUser(user, trelloUpdate);
     }
 
-    private void notifyUser(User user, TrelloUpdate trelloUpdate) {
-        String memberName = trelloUpdate.getAction().getMemberCreator().getFullName();
-        Data data = trelloUpdate.getAction().getData();
-        List<MessageEntity> entities = new ArrayList<>();
-        StringBuilder text = new StringBuilder();
+    public void notifyUser(User user, TrelloUpdate trelloUpdate) {
+        TelegramMessage telegramMessage = TelegramMessage.create();
 
-        appendHeader(text, entities);
-        appendUserInfo(text, entities, memberName);
-        appendAction(text, entities, trelloUpdate.getAction().getDisplay().getTranslationKey(), data);
+        appendHeader(telegramMessage, trelloUpdate);
+        appendUserInfo(telegramMessage, trelloUpdate);
+        appendAction(telegramMessage, trelloUpdate);
 
-        bot.sendMessage(text.toString(), user.getChatId(), entities);
+        bot.sendMessage(telegramMessage.getText(), user.getChatId(), telegramMessage.getEntities());
     }
 
-    private void appendHeader(StringBuilder text, List<MessageEntity> entities) {
-        text.append("Обновление в Trello:\n");
-        entities.add(bold("Обновление в Trello:", 0));
+    private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {
+        text.append("📌 Обновление на доске: ")
+                .textLink(trelloUpdate.getAction().getData().getBoard().getName(),
+                          trelloUpdate.getModel().getShortUrl())
+                .append("\n\n");
     }
 
-    private void appendUserInfo(StringBuilder text, List<MessageEntity> entities, String memberName) {
-        int offset = text.length();
-        text.append("Пользователь: ").append(memberName).append("\n");
-        entities.add(bold("Пользователь:", offset));
+    private void appendUserInfo(TelegramMessage text, TrelloUpdate trelloUpdate) {
+        text.append("👤 ")
+                .bold(trelloUpdate.getAction().getMemberCreator().getFullName())
+                .append("\n");
     }
 
-    private void appendAction(StringBuilder text, List<MessageEntity> entities, TranslationKey key, Data data) {
-        int offset = text.length();
-        text.append("Действие: ");
-        entities.add(bold("Действие:", offset));
-        offset += "Действие: ".length();
-
-        switch (key) {
-            case ACTION_COMMENT_ON_CARD -> appendCommentOnCard(text, entities, data, offset);
-            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> appendMoveCardFromListToList(text, entities, data, offset);
+    private void appendAction(TelegramMessage text, TrelloUpdate trelloUpdate) {
+        switch (trelloUpdate.getAction().getDisplay().getTranslationKey()) {
+            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST:
+                appendCardMoveAction(text, trelloUpdate);
+                break;
+            case ACTION_COMMENT_ON_CARD:
+                appendCommentAction(text, trelloUpdate);
+                break;
         }
     }
 
-    private void appendCommentOnCard(StringBuilder text, List<MessageEntity> entities, Data data, int offset) {
-        String cardName = data.getCard().getName();
-        String cardUrl = "https://trello.com/c/" + data.getCard().getShortLink();
-        String comment = data.getText();
-
-        text.append("прокомментировал карточку ").append(cardName).append("\n");
-        entities.add(textLink(cardName, cardUrl, offset + "прокомментировал карточку ".length()));
-
-        int messageOffset = text.length();
-        text.append("Сообщением: ").append(comment);
-        entities.add(bold("Сообщением:", messageOffset));
+    private void appendCardMoveAction(TelegramMessage text, TrelloUpdate trelloUpdate) {
+        Data data = trelloUpdate.getAction().getData();
+        text.append("🔄 Переместил(а) карточку ")
+                .textLink(data.getCard().getName(), "https://trello.com/c/" + data.getCard().getShortLink())
+                .append(":\n\n")
+                .italic(data.getListBefore().getName())
+                .append(" → ")
+                .italic(data.getListAfter().getName());
     }
 
-    private void appendMoveCardFromListToList(StringBuilder text, List<MessageEntity> entities, Data data, int offset) {
-        String listBefore = data.getListBefore().getName();
-        String listAfter = data.getListAfter().getName();
-
-        text.append("переместил карточку из \"").append(listBefore).append("\" в \"").append(listAfter).append("\"");
-        entities.add(bold(listBefore, offset + "переместил карточку из \"".length()));
-        entities.add(bold(listAfter, offset + "переместил карточку из \"".length() + listBefore.length() + "\" в \"".length()));
+    private void appendCommentAction(TelegramMessage text, TrelloUpdate trelloUpdate) {
+        Data data = trelloUpdate.getAction().getData();
+        text.append("💬 Оставил(а) комментарий к карточке ")
+                .textLink(data.getCard().getName(), "https://trello.com/c/" + data.getCard().getShortLink())
+                .append(":\n\n")
+                .italic("“" + data.getText() + "”")
+                .append("\n\n");
     }
 }

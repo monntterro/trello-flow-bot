@@ -13,6 +13,7 @@ import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
+import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
-import static com.monntterro.trelloflowbot.bot.utils.MessageUtils.textLink;
 
 @Service
 @RequiredArgsConstructor
@@ -178,7 +178,7 @@ public class CallbackHandler {
         String boardUrl = JsonParser.read(data, "url", String.class);
         String boardName = JsonParser.read(data, "name", String.class);
         String text = messageResource.getMessage("menu.chosen.board", boardName);
-        List<MessageEntity> messageEntities = List.of(textLink(boardName, boardUrl, text.length() - boardName.length()));
+        List<MessageEntity> messageEntities = List.of(TelegramMessage.textLink(boardName, boardUrl, text.length() - boardName.length()));
 
         User user = getUser(callbackQuery);
         String modelId = JsonParser.read(data, "modelId", String.class);
