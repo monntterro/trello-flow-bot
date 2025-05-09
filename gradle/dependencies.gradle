@@ -1,0 +1,60 @@
+ext {
+    versions = [
+            springBoot                : '3.4.4',
+            springDependencyManagement: '1.1.7',
+            springWeb                 : '3.4.1',
+            springDataJpa             : '3.3.4',
+            springSecurityCrypto      : '6.2.2',
+            springCloudOpenFeign      : '4.1.2',
+            springCloud               : '2024.0.1',
+            telegramBot               : '8.3.0',
+            lombok                    : '1.18.36',
+            postgres                  : '42.6.1',
+            flyway                    : '11.1.0',
+            junitPlatformLauncher     : '1.11.4'
+    ]
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring
+    implementation "org.springframework.boot:spring-boot-starter-web:${versions.springWeb}"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${versions.springDataJpa}"
+    implementation "org.springframework.security:spring-security-crypto:${versions.springSecurityCrypto}"
+    implementation "org.springframework.cloud:spring-cloud-starter-openfeign:${versions.springCloudOpenFeign}"
+
+    // Telegram
+    implementation "org.telegram:telegrambots-client:${versions.telegramBot}"
+    implementation "org.telegram:telegrambots-springboot-longpolling-starter:${versions.telegramBot}"
+
+    // Flyway
+    implementation "org.flywaydb:flyway-core:${versions.flyway}"
+    implementation "org.flywaydb:flyway-database-postgresql:${versions.flyway}"
+
+    // Postgres
+    runtimeOnly "org.postgresql:postgresql:${versions.postgres}"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${versions.lombok}"
+    annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+    testCompileOnly "org.projectlombok:lombok:${versions.lombok}"
+    testAnnotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+
+    // Testing
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${versions.junitPlatformLauncher}"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${versions.springCloud}"
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}

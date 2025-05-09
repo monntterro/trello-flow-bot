@@ -2,6 +2,7 @@ package com.monntterro.trelloflowbot.bot.service;
 
 import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
+import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
 import com.monntterro.trelloflowbot.bot.repository.TrelloModelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class TrelloModelService {
     @Transactional
     public List<TrelloModel> saveAllOrUpdate(List<TrelloModel> trelloModels, User user) {
         List<TrelloModel> existingTrelloModels = userService.findById(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"))
+                .orElseThrow(() -> new UserNotFoundException("User not found"))
                 .getTrelloModels();
 
         List<TrelloModel> updatedTrelloModels = new ArrayList<>();

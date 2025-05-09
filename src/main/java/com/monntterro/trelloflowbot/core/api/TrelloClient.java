@@ -23,71 +23,40 @@ public class TrelloClient {
     @Value("${trello.webhook.baseUrl}")
     private String webhookBaseUrl;
 
-    /**
-     * Validates Trello API credentials.
-     *
-     * @param key   Trello API key
-     * @param token Trello user token
-     * @return true if credentials are valid, false otherwise
-     */
     public boolean isValidKeyAndToken(String key, String token) {
         try {
-            apiClient.getMyBoards(key, token);
+            apiClient.getMe(key, token);
             return true;
         } catch (FeignException.Unauthorized e) {
             return false;
         }
     }
 
-    /**
-     * Retrieves boards for authenticated user.
-     *
-     * @param key   Trello API key
-     * @param token Trello user token
-     * @return List of user's boards
-     * @throws AuthenticationException if authentication fails
-     */
+
     public List<Board> getMyBoards(String key, String token) throws AuthenticationException {
         try {
             return apiClient.getMyBoards(key, token);
         } catch (FeignException.Unauthorized e) {
-            throw new AuthenticationException();
+            throw new AuthenticationException("Invalid Trello API key or token");
         }
     }
 
-    /**
-     * Creates a webhook subscription for a Trello model.
-     *
-     * @param modelId     ID of the Trello model to subscribe to
-     * @param webhookPath Path endpoint for webhook callbacks
-     * @param key         Trello API key
-     * @param token       Trello user token
-     * @return Created webhook
-     * @throws AuthenticationException if authentication fails
-     */
     public Webhook subscribeToModel(String modelId, String webhookPath, String key,
                                     String token) throws AuthenticationException {
         String callbackUrl = buildCallbackUrl(webhookPath);
         try {
             return apiClient.createWebhook(callbackUrl, modelId, key, token);
         } catch (FeignException.Unauthorized e) {
-            throw new AuthenticationException();
+            throw new AuthenticationException("Invalid Trello API key or token");
         }
     }
 
-    /**
-     * Removes a webhook subscription.
-     *
-     * @param webhookId ID of the webhook to delete
-     * @param key       Trello API key
-     * @param token     Trello user token
-     * @throws AuthenticationException if authentication fails
-     */
+
     public void unsubscribeFromModel(String webhookId, String key, String token) throws AuthenticationException {
         try {
             apiClient.deleteWebhook(webhookId, key, token);
         } catch (FeignException.Unauthorized e) {
-            throw new AuthenticationException();
+            throw new AuthenticationException("Invalid Trello API key or token");
         }
     }
 

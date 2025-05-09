@@ -1,63 +1,11 @@
 plugins {
-    id 'org.springframework.boot' version "${springBootVersion}"
-    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.4.4'
     id 'java'
 }
 
 group = 'com.monntterro'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    // Spring
-    implementation "org.springframework.boot:spring-boot-starter-web:${springWebVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springDataJpaVersion}"
-    implementation "org.springframework.security:spring-security-crypto:${springSecurityCryptoVersion}"
-    implementation "org.springframework.cloud:spring-cloud-starter-openfeign:${springCloudOpenFeignVersion}"
-
-    // Telegram
-    implementation "org.telegram:telegrambots-client:${telegramBotVersion}"
-    implementation "org.telegram:telegrambots-springboot-longpolling-starter:${telegramBotVersion}"
-
-    // Flyway
-    implementation "org.flywaydb:flyway-core:${flywayVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-
-    // Postgres
-    runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
-
-    // Lombok
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
-    // Testing
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitPlatformLauncherVersion}"
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
-}
-
-
-test {
-    useJUnitPlatform()
-}
+apply from: 'gradle/dependencies.gradle'
+apply from: 'gradle/compilation.gradle'

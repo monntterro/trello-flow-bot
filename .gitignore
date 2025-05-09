@@ -6,7 +6,6 @@
 gradlew
 gradlew.bat
 additional
-/requests/trello-webhooks/http-client.private.env.json
 ##############################
 ## Java
 ##############################
@@ -36,11 +35,9 @@ buildNumber.properties
 ##############################
 bin/
 build/
-gradle/
 .gradle
 .gradletasknamecache
 gradle-app.setting
-!gradle-wrapper.jar
 ##############################
 ## IntelliJ
 ##############################
