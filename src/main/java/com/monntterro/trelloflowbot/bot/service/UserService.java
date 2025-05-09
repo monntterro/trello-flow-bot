@@ -20,17 +20,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public boolean existsByTelegramId(Long telegramId) {
-        return userRepository.existsByTelegramId(telegramId);
-    }
-
-    public void updateChatId(long telegramId, long chatId) {
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
-        user.setChatId(chatId);
-        userRepository.save(user);
-    }
-
     public Optional<User> findById(long id) {
         return userRepository.findById(id);
     }

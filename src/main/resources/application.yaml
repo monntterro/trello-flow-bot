@@ -38,6 +38,6 @@ telegram:
   callback:
     expiration: 1m
     cleanup:
-      interval.secs: 600
+      interval.secs: 10
   bot:
     token: ${BOT_TOKEN}

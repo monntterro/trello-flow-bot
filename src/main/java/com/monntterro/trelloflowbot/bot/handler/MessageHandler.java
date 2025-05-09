@@ -32,20 +32,25 @@ public class MessageHandler {
         long telegramId = message.getFrom().getId();
         long chatId = message.getChatId();
 
-        if (userService.existsByTelegramId(telegramId)) {
-            User user = userService.findByTelegramId(telegramId)
-                    .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
-            if (user.getChatId() != chatId) {
-                userService.updateChatId(telegramId, chatId);
-            }
-            return userService.save(user);
-        } else {
-            User user = User.builder()
-                    .telegramId(telegramId)
-                    .chatId(chatId)
-                    .state(State.IDLE)
-                    .build();
-            return userService.save(user);
+        return userService.findByTelegramId(telegramId)
+                .map(user -> updateUserChatId(user, chatId))
+                .orElseGet(() -> createNewUser(telegramId, chatId));
+    }
+
+    private User updateUserChatId(User user, long chatId) {
+        if (user.getChatId() != chatId) {
+            user.setChatId(chatId);
+            userService.save(user);
         }
+        return user;
+    }
+
+    private User createNewUser(long telegramId, long chatId) {
+        User newUser = User.builder()
+                .telegramId(telegramId)
+                .chatId(chatId)
+                .state(State.IDLE)
+                .build();
+        return userService.save(newUser);
     }
 }

@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 @Component
 @RequiredArgsConstructor
 public class RegistrationProcessor {
+    private static final String CANCEL_COMMAND = "/cancel";
+
     private final TelegramBot bot;
     private final UserService userService;
     private final TrelloClient trelloClient;
@@ -21,31 +23,32 @@ public class RegistrationProcessor {
 
     public void register(Message message, User user) {
         String messageText = message.getText();
-        if (messageText.equals("/cancel")) {
+        if (CANCEL_COMMAND.equals(messageText)) {
             commandProcessor.processCommand(message);
             return;
         }
 
         String[] keyAndToken = messageText.split(",\\s+", 2);
-        if (keyAndToken.length != 2) {
-            String text = messageResource.getMessage("settings.token_and_key.set.error.wrong_format");
-            bot.sendMessage(text, message.getChatId());
+        if (keyAndToken.length < 2) {
+            bot.sendMessage(messageResource.getMessage("settings.token_and_key.set.error.wrong_format"), message.getChatId());
             return;
         }
 
         String key = keyAndToken[0];
         String token = keyAndToken[1];
         if (!trelloClient.isValidKeyAndToken(key, token)) {
-            String text = messageResource.getMessage("settings.token_and_key.set.error.invalid");
-            bot.sendMessage(text, message.getChatId());
+            bot.sendMessage(messageResource.getMessage("settings.token_and_key.set.error.invalid"), message.getChatId());
             return;
         }
 
+        updateUserCredentials(user, key, token);
+        bot.sendMessage(messageResource.getMessage("settings.token_and_key.set.success"), message.getChatId());
+    }
+
+    private void updateUserCredentials(User user, String key, String token) {
         user.setState(State.IDLE);
         user.setTrelloApiKey(key);
         user.setTrelloApiToken(token);
         userService.save(user);
-        String text = messageResource.getMessage("settings.token_and_key.set.success");
-        bot.sendMessage(text, message.getChatId());
     }
 }

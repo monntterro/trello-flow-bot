@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Feign client for Trello API integration.
- */
 @FeignClient(name = "trelloApiClient", url = "${trello.api.baseUrl:https://api.trello.com/1}")
 public interface TrelloApiClient {
+
+    @GetMapping("/members/me")
+    void getMe(@RequestParam("key") String key,
+               @RequestParam("token") String token);
 
     @GetMapping("/members/me/boards")
     List<Board> getMyBoards(@RequestParam("key") String key,
