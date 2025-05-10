@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: trello-flow-bot
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  flyway:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    schemas: ${FLYWAY_SCHEMA:public}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-migration-naming: true
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: ${JPA_IS_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+encryption:
+  key: ${ENCRYPTION_KEY}
+  salt: ${ENCRYPTION_SALT}
+trello:
+  api:
+    baseUrl: https://api.trello.com/1
+  webhook:
+    baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
+telegram:
+  callback:
+    expiration: 1m
+    cleanup:
+      interval.secs: 10
+  bot:
+    token: ${BOT_TOKEN}
