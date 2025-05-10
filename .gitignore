@@ -2,7 +2,6 @@
 ## Project
 ##############################
 .env
-.docker.env
 gradlew
 gradlew.bat
 additional

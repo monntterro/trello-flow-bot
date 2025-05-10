@@ -34,7 +34,7 @@ Start the ngrok service to expose your local server to the internet.
   docker run -it \
   -e NGROK_AUTHTOKEN=your_token \
   -p 4040:4040 \
-  ngrok/ngrok:3-alpine http http://host.docker.internal:8081
+  ngrok/ngrok:latest http http://host.docker.internal:8081
 ```
 
 Copy the forwarding URL that is provided by ngrok and use it in the 4th step for the variable
@@ -42,13 +42,13 @@ Copy the forwarding URL that is provided by ngrok and use it in the 4th step for
 
 ### 4. 🏁 Start Application
 
-#### 🔧 4.1 Run Locally (via Gradle)
-
-Set environments
+Set environments:
 
 ```bash
-  cp .example.env .env
+  cp .example.docker.env .docker.env
 ```
+
+#### 🔧 4.1 Run Locally (via Gradle)
 
 Start the postgres:
 
@@ -63,12 +63,6 @@ Start the application:
 ```
 
 #### 🐳 4.2 Run with Docker Compose
-
-Set environments:
-
-```bash
-  cp .example.docker.env .docker.env
-```
 
 Start application:
 
