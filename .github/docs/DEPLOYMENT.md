@@ -45,7 +45,7 @@ Copy the forwarding URL that is provided by ngrok and use it in the 4th step for
 Set environments:
 
 ```bash
-  cp .example.docker.env .docker.env
+  cp .example.env .env
 ```
 
 #### 🔧 4.1 Run Locally (via Gradle)
