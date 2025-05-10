@@ -21,7 +21,12 @@ Before running the application locally, ensure the following are installed on yo
   git clone https://github.com/monntterro/trello-flow-bot.git
 ```
 
-### 2. 🌐 Start Ngrok Tunnel
+### 2. 🎯 Register Telegram Bot
+
+Register your bot with [@BotFather](https://t.me/botfather) and obtain the token. Set the token in the 4th step for the
+variable `BOT_TOKEN`.
+
+### 3. 🌐 Start Ngrok Tunnel
 
 Start the ngrok service to expose your local server to the internet.
 
@@ -32,12 +37,12 @@ Start the ngrok service to expose your local server to the internet.
   ngrok/ngrok:3-alpine http http://host.docker.internal:8081
 ```
 
-Copy the forwarding URL that is provided by ngrok and use it in the next step for the variable
+Copy the forwarding URL that is provided by ngrok and use it in the 4th step for the variable
 `TRELLO_WEBHOOKS_BASE_URL`.
 
-### 3. 🏁 Start Application
+### 4. 🏁 Start Application
 
-#### 🔧 3.1 Run Locally (via Gradle)
+#### 🔧 4.1 Run Locally (via Gradle)
 
 Set environments
 
@@ -57,7 +62,7 @@ Start the application:
   ./gradlew bootRun
 ```
 
-#### 🐳 3.2 Run with Docker Compose
+#### 🐳 4.2 Run with Docker Compose
 
 Set environments:
 
