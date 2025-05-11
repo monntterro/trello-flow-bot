@@ -1,7 +1,7 @@
 # Uses
 
 To use Trello webhooks locally, you will need a static IP address. Alternatively, you can use a tunneling service such
-as [ngrok](https://ngrok.com).
+as [ngrok](https://ngrok.com) _(not appropriate for production)_.
 
 ## 📦 Prerequisites
 
@@ -28,9 +28,9 @@ variable `BOT_TOKEN`.
 
 ### 3. 🌐 Set up public access to the app
 
-Trello requires a public URL to send webhooks.
+Trello requires a public URL to send webhooks. If you have a domain, you can configure it using Nginx and SSL.
 
-#### 3.1 Ngrok (Not recommended for production)
+#### 3.1 Ngrok (Not appropriate for production)
 
 Start the ngrok service, redirecting requests to the application running on `http://localhost:${APP_PORT}` _(by default
 APP_PORT = 8081)_.
