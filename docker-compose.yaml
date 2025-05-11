@@ -2,7 +2,7 @@ name: trello-flow-bot
 
 services:
   backend:
-    image: monntterro/trello-flow-bot:latest
+    image: monntterro/trello-flow-bot:1.0.1
     build:
       context: .
     restart: on-failure
