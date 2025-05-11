@@ -1,4 +1,4 @@
-# Deployment
+# Uses
 
 To use Trello webhooks locally, you will need a static IP address. Alternatively, you can use a tunneling service such
 as [ngrok](https://ngrok.com).
@@ -26,29 +26,39 @@ Before running the application locally, ensure the following are installed on yo
 Register your bot with [@BotFather](https://t.me/botfather) and obtain the token. Set the token in the 4th step for the
 variable `BOT_TOKEN`.
 
-### 3. 🌐 Start Ngrok Tunnel
+### 3. 🌐 Set up public access to the app
 
-Start the ngrok service to expose your local server to the internet.
+Trello requires a public URL to send webhooks.
+
+#### 3.1 Ngrok (Not recommended for production)
+
+Start the ngrok service, redirecting requests to the application running on `http://localhost:${APP_PORT}` _(by default
+APP_PORT = 8081)_.
 
 ```shell
-  docker run -it \
+  docker run -d \
   -e NGROK_AUTHTOKEN=your_token \
   -p 4040:4040 \
   ngrok/ngrok:latest http http://host.docker.internal:8081
 ```
 
-Copy the forwarding URL that is provided by ngrok and use it in the 4th step for the variable
-`TRELLO_WEBHOOKS_BASE_URL`.
+Go to `http://localhost:4040` and you will see a forwarding URL or get it by http GET request in `PublicURL` block:
+
+```http request
+http://your.server.ip:4040/api/tunnels
+```
+
+Copy it and use in the 4th step for the variable `TRELLO_WEBHOOKS_BASE_URL`.
 
 ### 4. 🏁 Start Application
 
-Set environments:
+Copy and set environments:
 
 ```bash
   cp .example.env .env
 ```
 
-#### 🔧 4.1 Run Locally (via Gradle)
+#### 🔧 4.1 Run Locally
 
 Start the postgres:
 
