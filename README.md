@@ -7,7 +7,7 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 
 - [Quick start](#-quick-start)
 - [Features](#-features)
-- [Deployment](.github/docs/DEPLOYMENT.md)
+- [Uses](.github/docs/USES.md)
 
 ## 🚀 Features
 
