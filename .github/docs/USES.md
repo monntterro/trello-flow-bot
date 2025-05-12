@@ -35,11 +35,21 @@ Trello requires a public URL to send webhooks. If you have a domain, you can con
 Start the ngrok service, redirecting requests to the application running on `http://localhost:${APP_PORT}` _(by default
 APP_PORT = 8081)_.
 
+- **Windows/MacOS:**
 ```shell
   docker run -d \
   -e NGROK_AUTHTOKEN=your_token \
   -p 4040:4040 \
   ngrok/ngrok:latest http http://host.docker.internal:8081
+```
+
+- **Linux:**
+
+```shell
+  docker run -d \
+  --network host \
+  -e NGROK_AUTHTOKEN=your_token \
+  ngrok/ngrok:latest http http://localhost:8081
 ```
 
 Go to `http://localhost:4040` and you will see a forwarding URL or get it by http GET request in `PublicURL` block:
