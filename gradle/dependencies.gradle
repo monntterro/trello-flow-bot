@@ -11,7 +11,8 @@ ext {
             lombok                    : '1.18.36',
             postgres                  : '42.6.1',
             flyway                    : '11.1.0',
-            junitPlatformLauncher     : '1.11.4'
+            junitPlatformLauncher: '1.11.4',
+            scribe               : '8.3.3',
     ]
 }
 
@@ -29,6 +30,10 @@ dependencies {
     // Telegram
     implementation "org.telegram:telegrambots-client:${versions.telegramBot}"
     implementation "org.telegram:telegrambots-springboot-longpolling-starter:${versions.telegramBot}"
+
+    // Scribe (OAuth)
+    implementation "com.github.scribejava:scribejava-apis:${versions.scribe}"
+    implementation "com.github.scribejava:scribejava-core:${versions.scribe}"
 
     // Flyway
     implementation "org.flywaydb:flyway-core:${versions.flyway}"

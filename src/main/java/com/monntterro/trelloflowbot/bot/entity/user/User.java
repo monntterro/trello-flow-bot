@@ -34,12 +34,12 @@ public class User {
     private State state;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "trello_api_key")
-    private String trelloApiKey;
+    @Column(name = "token")
+    private String token;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "trello_api_token")
-    private String trelloApiToken;
+    @Column(name = "token_secret")
+    private String tokenSecret;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TrelloModel> trelloModels = new ArrayList<>();

@@ -29,9 +29,15 @@ spring:
 encryption:
   key: ${ENCRYPTION_KEY}
   salt: ${ENCRYPTION_SALT}
+app:
+  url: ${APP_PUBLIC_URL}
 trello:
   api:
-    baseUrl: https://api.trello.com/1
+    auth_token:
+      expiration: 30days
+    key: ${TRELLO_API_KEY}
+    secret: ${TRELLO_API_SECRET}
+    callback: /oauth/callback
   webhook:
     baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
 telegram:

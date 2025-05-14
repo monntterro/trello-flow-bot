@@ -3,7 +3,6 @@ package com.monntterro.trelloflowbot.bot.handler;
 import com.monntterro.trelloflowbot.bot.entity.user.State;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.processor.CommandProcessor;
-import com.monntterro.trelloflowbot.bot.processor.RegistrationProcessor;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class MessageHandler {
     private final UserService userService;
     private final CommandProcessor commandProcessor;
-    private final RegistrationProcessor registrationProcessor;
 
     public void handle(Message message) {
         User user = getOrCreateUserFromMessage(message);
@@ -24,7 +22,6 @@ public class MessageHandler {
                     commandProcessor.processCommand(message);
                 }
             }
-            case CHANGE_TRELLO_TOKEN_AND_KEY -> registrationProcessor.register(message, user);
         }
     }
 

@@ -19,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Facade service that provides simplified access to Trello client operations.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -33,8 +30,8 @@ public class TrelloClientFacade {
     @Transactional
     public List<TrelloModel> getUserBoards(User user) throws AuthenticationException {
         List<Board> boards = trelloClient.getMyBoards(
-                user.getTrelloApiKey(),
-                user.getTrelloApiToken()
+                user.getToken(),
+                user.getTokenSecret()
         );
 
         List<TrelloModel> trelloModels = mapToTrelloModels(boards, user);
@@ -52,8 +49,8 @@ public class TrelloClientFacade {
         Webhook webhook = trelloClient.subscribeToModel(
                 modelId,
                 webhookPath,
-                user.getTrelloApiKey(),
-                user.getTrelloApiToken()
+                user.getToken(),
+                user.getTokenSecret()
         );
 
         saveSubscription(trelloModel, webhook, user);
@@ -102,8 +99,8 @@ public class TrelloClientFacade {
     private void deleteSubscription(TrelloModel trelloModel, TrelloWebhook trelloWebhook, User user) {
         trelloClient.unsubscribeFromModel(
                 trelloWebhook.getId(),
-                user.getTrelloApiKey(),
-                user.getTrelloApiToken()
+                user.getToken(),
+                user.getTokenSecret()
         );
 
         trelloModel.setSubscribed(false);
