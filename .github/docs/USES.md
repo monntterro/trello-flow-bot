@@ -26,16 +26,17 @@ Before running the application locally, ensure the following are installed on yo
 Register your bot with [@BotFather](https://t.me/botfather) and obtain the token. Set the token in the 4th step for the
 variable `BOT_TOKEN`.
 
-### 3. 🌐 Set up public access to the app
+### 4. 🌐 Set up public access to the app
 
 Trello requires a public URL to send webhooks. If you have a domain, you can configure it using Nginx and SSL.
 
-#### 3.1 Ngrok (Not appropriate for production)
+#### 4.1 Ngrok (Not appropriate for production)
 
 Start the ngrok service, redirecting requests to the application running on `http://localhost:${APP_PORT}` _(by default
 APP_PORT = 8081)_.
 
 - **Windows/MacOS:**
+
 ```shell
   docker run -d \
   -e NGROK_AUTHTOKEN=your_token \
@@ -58,9 +59,17 @@ Go to `http://localhost:4040` and you will see a forwarding URL or get it by htt
 http://your.server.ip:4040/api/tunnels
 ```
 
-Copy it and use in the 4th step for the variable `TRELLO_WEBHOOKS_BASE_URL`.
+Copy it and use in the 6th step for the environmental variable `APP_URL`.
 
-### 4. 🏁 Start Application
+### 5. 🔑 Prepare Trello Access
+
+Register your application with Trello
+by [this guide](https://telegra.ph/How-to-get-a-key-and-a-token-from-Trello-05-04).
+Make sure that you have set the `APP_URL` to `Allowed origins` field.
+And copy api key and secret to the 6th step for the
+variables `TRELLO_API_KEY` and `TRELLO_API_SECRET`.
+
+### 6. 🏁 Start Application
 
 Copy and set environments:
 
@@ -68,7 +77,7 @@ Copy and set environments:
   cp .example.env .env
 ```
 
-#### 🔧 4.1 Run Locally
+#### 🔧 6.1 Run Locally
 
 Start the postgres:
 
@@ -82,7 +91,7 @@ Start the application:
   ./gradlew bootRun
 ```
 
-#### 🐳 4.2 Run with Docker Compose
+#### 🐳 6.2 Run with Docker Compose
 
 Start application:
 
@@ -97,7 +106,6 @@ Start application:
 - Spring Boot Web: `3.4.1`
 - Spring Boot Data JPA: `3.3.4`
 - Spring Security Crypto: `6.2.2`
-- Spring Cloud OpenFeign: `4.1.2`
 
 ### Databases and Migrations
 
@@ -112,6 +120,7 @@ Start application:
 ### Utility Libraries
 
 - Lombok: `1.18.36`
+- Scrive: `8.3.3`
 
 ### Testing
 

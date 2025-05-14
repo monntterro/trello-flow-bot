@@ -60,7 +60,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
     private void setCommands() {
         List<BotCommand> commands = Arrays.asList(
                 new BotCommand("/menu", "Открыть меню"),
-                new BotCommand("/set_token_and_key", "Установить токен и ключ Trello")
+                new BotCommand("/login", "Авторизоваться через Trello")
         );
 
         SetMyCommands setMyCommands = new SetMyCommands(commands);

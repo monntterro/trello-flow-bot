@@ -16,6 +16,13 @@ public class ButtonUtils {
                 .build();
     }
 
+    public static InlineKeyboardButton urlButton(String text, String url) {
+        return InlineKeyboardButton.builder()
+                .text(text)
+                .url(url)
+                .build();
+    }
+
     public static InlineKeyboardRow row(InlineKeyboardButton button, InlineKeyboardButton... buttons) {
         InlineKeyboardRow row = new InlineKeyboardRow();
         row.add(button);

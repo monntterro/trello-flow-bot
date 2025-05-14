@@ -5,13 +5,13 @@ ext {
             springWeb                 : '3.4.1',
             springDataJpa             : '3.3.4',
             springSecurityCrypto      : '6.2.2',
-            springCloudOpenFeign      : '4.1.2',
             springCloud               : '2024.0.1',
             telegramBot               : '8.3.0',
             lombok                    : '1.18.36',
             postgres                  : '42.6.1',
             flyway                    : '11.1.0',
-            junitPlatformLauncher     : '1.11.4'
+            junitPlatformLauncher: '1.11.4',
+            scribe               : '8.3.3',
     ]
 }
 
@@ -24,11 +24,14 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:${versions.springWeb}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${versions.springDataJpa}"
     implementation "org.springframework.security:spring-security-crypto:${versions.springSecurityCrypto}"
-    implementation "org.springframework.cloud:spring-cloud-starter-openfeign:${versions.springCloudOpenFeign}"
 
     // Telegram
     implementation "org.telegram:telegrambots-client:${versions.telegramBot}"
     implementation "org.telegram:telegrambots-springboot-longpolling-starter:${versions.telegramBot}"
+
+    // Scribe (OAuth)
+    implementation "com.github.scribejava:scribejava-apis:${versions.scribe}"
+    implementation "com.github.scribejava:scribejava-core:${versions.scribe}"
 
     // Flyway
     implementation "org.flywaydb:flyway-core:${versions.flyway}"
@@ -45,12 +48,6 @@ dependencies {
 
     // Testing
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:${versions.junitPlatformLauncher}"
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${versions.springCloud}"
-    }
 }
 
 configurations {
