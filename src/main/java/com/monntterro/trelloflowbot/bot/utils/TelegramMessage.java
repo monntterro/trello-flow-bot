@@ -33,22 +33,6 @@ public class TelegramMessage {
         return addEntity(content, "italic", null);
     }
 
-    public TelegramMessage underline(String content) {
-        return addEntity(content, "underline", null);
-    }
-
-    public TelegramMessage strikethrough(String content) {
-        return addEntity(content, "strikethrough", null);
-    }
-
-    public TelegramMessage code(String content) {
-        return addEntity(content, "code", null);
-    }
-
-    public TelegramMessage pre(String content) {
-        return addEntity(content, "pre", null);
-    }
-
     public TelegramMessage textLink(String displayText, String url) {
         return addEntity(displayText, "text_link", url);
     }
@@ -75,14 +59,6 @@ public class TelegramMessage {
         return MessageEntity.builder()
                 .type("text_link")
                 .url(url)
-                .length(text.length())
-                .offset(offset)
-                .build();
-    }
-
-    public static MessageEntity bold(String text, int offset) {
-        return MessageEntity.builder()
-                .type("bold")
                 .length(text.length())
                 .offset(offset)
                 .build();

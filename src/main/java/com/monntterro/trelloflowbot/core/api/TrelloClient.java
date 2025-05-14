@@ -22,12 +22,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TrelloClient {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private final OAuth10aService oAuthService;
 
-    @Value("${trello.webhook.baseUrl}")
-    private String webhookBaseUrl;
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    @Value("${app.url}")
+    private String appUrl;
 
     public List<Board> getMyBoards(String accessToken, String accessSecret) {
         OAuthRequest request = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me/boards");
@@ -82,7 +82,7 @@ public class TrelloClient {
     }
 
     private String buildCallbackUrl(String webhookPath) {
-        return webhookBaseUrl + "/" + webhookPath;
+        return appUrl + "/" + webhookPath;
     }
 }
 

@@ -6,7 +6,6 @@ import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.model.callback.CallbackType;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.TrelloOAuthSecretStorage;
-import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.core.service.OAuthService;
@@ -25,7 +24,6 @@ public class CommandProcessor {
     private static final String MENU_COMMAND = "/menu";
 
     private final TelegramBot bot;
-    private final UserService userService;
     private final CallbackDataCache dataCache;
     private final MessageResource messageResource;
     private final OAuthService oAuthService;
@@ -42,21 +40,18 @@ public class CommandProcessor {
 
     private void menuCommand(Message message) {
         String text = messageResource.getMessage("menu.text");
-        InlineKeyboardMarkup markup = buildMenuMarkup();
-        bot.sendMessage(text, message.getChatId(), markup);
-    }
-
-    private InlineKeyboardMarkup buildMenuMarkup() {
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+
         Bucket bucket = dataCache.createBucket();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
         String settingsCallbackDataId = bucket.put(settingsCallbackData);
-
-        return inlineKeyboard(
+        InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings"), settingsCallbackDataId))
         );
+
+        bot.sendMessage(text, message.getChatId(), markup);
     }
 
     private void startCommand(Message message) {
@@ -65,7 +60,6 @@ public class CommandProcessor {
     }
 
     private void trelloLogin(Message message) {
-        String text = messageResource.getMessage("trello.login.text");
         long chatId = message.getChatId();
 
         OAuth1RequestToken requestToken;
@@ -78,9 +72,10 @@ public class CommandProcessor {
             return;
         }
 
+        String text = messageResource.getMessage("trello.login.text");
         String url = oAuthService.getAuthorizationUrl(requestToken);
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(urlButton(messageResource.getMessage("trello.login.button"), url))
+                row(urlButton(messageResource.getMessage("menu.login"), url))
         );
         bot.sendMessage(text, chatId, markup);
     }

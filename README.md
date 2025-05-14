@@ -25,8 +25,7 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 
 ## 🖥️ Quick start
 
-1. Grant access to your Trello account for the bot by providing the key and
-   token [(How to get a key and token)](https://telegra.ph/How-to-get-a-key-and-a-token-from-Trello-05-04)
+1. Grant access to your Trello account for the bot with OAuth
 2. Select the board(s) you want to receive updates for
 3. Receive notifications about changes on these boards
 
@@ -40,4 +39,4 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 - **Flyway**
 - **PostgreSQL**
 - **Telegram Bot**
-- **Spring Cloud OpenFeign**
+- *And others*

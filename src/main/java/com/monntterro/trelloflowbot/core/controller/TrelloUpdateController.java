@@ -26,7 +26,7 @@ public class TrelloUpdateController {
 
     @PostMapping("/{id}")
     public ResponseEntity<Void> consumeUpdate(@PathVariable("id") String webhookId,
-                                             @RequestBody TrelloUpdate trelloUpdate) {
+                                              @RequestBody TrelloUpdate trelloUpdate) {
         updateConsumer.consume(trelloUpdate, webhookId);
         return ResponseEntity.ok().build();
     }

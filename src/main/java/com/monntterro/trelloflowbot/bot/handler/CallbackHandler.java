@@ -92,7 +92,7 @@ public class CallbackHandler {
         String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
         String menuCallbackDataId = dataCache.createBucket().put(menuCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(urlButton(messageResource.getMessage("trello.login.button"), url)),
+                row(urlButton(messageResource.getMessage("menu.login"), url)),
                 row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
         );
 
