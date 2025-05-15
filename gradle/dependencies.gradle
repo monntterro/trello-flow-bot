@@ -27,7 +27,7 @@ dependencies {
 
     // Telegram
     implementation "org.telegram:telegrambots-client:${versions.telegramBot}"
-    implementation "org.telegram:telegrambots-springboot-longpolling-starter:${versions.telegramBot}"
+    implementation "org.telegram:telegrambots-springboot-webhook-starter:${versions.telegramBot}"
 
     // Scribe (OAuth)
     implementation "com.github.scribejava:scribejava-apis:${versions.scribe}"

@@ -37,11 +37,12 @@ trello:
       expiration: 30days
     key: ${TRELLO_API_KEY}
     secret: ${TRELLO_API_SECRET}
-    callback: /oauth/callback
+    path: /oauth/callback
 telegram:
   callback:
     expiration: 1m
     cleanup:
       interval.secs: 10
   bot:
+    path: bot
     token: ${BOT_TOKEN}
