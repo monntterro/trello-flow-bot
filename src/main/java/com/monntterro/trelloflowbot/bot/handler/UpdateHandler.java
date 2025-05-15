@@ -12,7 +12,6 @@ public class UpdateHandler {
     private final CallbackHandler callbackHandler;
 
     public BotApiMethod<?> handle(Update update) {
-        System.out.println("------");
         if (update.hasMessage() && update.getMessage().hasText()) {
             messageHandler.handle(update.getMessage());
         } else if (update.hasCallbackQuery()) {

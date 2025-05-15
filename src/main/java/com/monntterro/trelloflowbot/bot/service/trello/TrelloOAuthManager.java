@@ -1,8 +1,10 @@
-package com.monntterro.trelloflowbot.bot.service;
+package com.monntterro.trelloflowbot.bot.service.trello;
 
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.service.UserService;
+import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.core.service.OAuthManager;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class TrelloOAuthManager implements OAuthManager {
         user.setTokenSecret(accessToken.getTokenSecret());
         userService.save(user);
 
-        String text = messageResource.getMessage("trello.oauth.success");
+        String text = messageResource.getMessage("account.login.success");
         bot.sendMessage(text, user.getChatId());
     }
 
@@ -35,7 +37,7 @@ public class TrelloOAuthManager implements OAuthManager {
         User user = userService.findByTelegramId(userTelegramId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        String text = messageResource.getMessage("trello.oauth.failure");
+        String text = messageResource.getMessage("account.login.failure");
         bot.sendMessage(text, user.getChatId());
     }
 }

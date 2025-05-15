@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.service;
+package com.monntterro.trelloflowbot.bot.service.bot;
 
 import com.monntterro.trelloflowbot.bot.config.props.TelegramBotProperties;
 import org.springframework.beans.factory.annotation.Value;

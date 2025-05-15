@@ -1,10 +1,11 @@
-package com.monntterro.trelloflowbot.bot.service;
+package com.monntterro.trelloflowbot.bot.service.trello;
 
 import com.monntterro.trelloflowbot.bot.model.OAuthSecret;
 import com.monntterro.trelloflowbot.core.service.OAuthSecretStorage;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -16,12 +17,11 @@ public class TrelloOAuthSecretStorage implements OAuthSecretStorage {
     }
 
     @Override
-    public String getSecretToken(String token) {
+    public Optional<String> getSecretToken(String token) {
         return storage.values().stream()
                 .filter(oAuthSecret -> oAuthSecret.getToken().equals(token))
                 .map(OAuthSecret::getTokenSecret)
-                .findAny()
-                .orElseThrow();
+                .findAny();
     }
 
     public long getKeyByToken(String token) {
@@ -32,5 +32,9 @@ public class TrelloOAuthSecretStorage implements OAuthSecretStorage {
         long key = entry.getKey();
         storage.remove(key);
         return key;
+    }
+
+    public void remove(long userTelegramId) {
+        storage.remove(userTelegramId);
     }
 }

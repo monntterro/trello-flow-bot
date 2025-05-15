@@ -1,14 +1,12 @@
 package com.monntterro.trelloflowbot.bot.processor;
 
-import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.model.callback.CallbackType;
-import com.monntterro.trelloflowbot.bot.service.TelegramBot;
-import com.monntterro.trelloflowbot.bot.service.TrelloOAuthSecretStorage;
+import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
+import com.monntterro.trelloflowbot.bot.service.trello.TrelloAccountService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
-import com.monntterro.trelloflowbot.core.service.OAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -26,8 +24,7 @@ public class CommandProcessor {
     private final TelegramBot bot;
     private final CallbackDataCache dataCache;
     private final MessageResource messageResource;
-    private final OAuthService oAuthService;
-    private final TrelloOAuthSecretStorage trelloOAuthSecretStorage;
+    private final TrelloAccountService accountService;
 
     public void processCommand(Message message) {
         String command = message.getText();
@@ -60,22 +57,19 @@ public class CommandProcessor {
     }
 
     private void trelloLogin(Message message) {
+        String text = messageResource.getMessage("account.login.text");
         long chatId = message.getChatId();
 
-        OAuth1RequestToken requestToken;
+        String url;
         try {
-            requestToken = oAuthService.getRequestToken();
-            trelloOAuthSecretStorage.put(requestToken.getToken(), requestToken.getTokenSecret(), message.getFrom()
-                    .getId());
+            accountService.removeAccount(message.getFrom().getId());
+            url = accountService.getLoginUrl(message.getFrom().getId());
         } catch (Exception e) {
             bot.sendMessage(messageResource.getMessage("error.text"), chatId);
             return;
         }
-
-        String text = messageResource.getMessage("trello.login.text");
-        String url = oAuthService.getAuthorizationUrl(requestToken);
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(urlButton(messageResource.getMessage("menu.login"), url))
+                row(urlButton(messageResource.getMessage("account.login"), url))
         );
         bot.sendMessage(text, chatId, markup);
     }

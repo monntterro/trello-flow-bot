@@ -29,6 +29,9 @@ public class TrelloClient {
     @Value("${app.url}")
     private String appUrl;
 
+    @Value("${trello.webhook.path}")
+    private String webhookPath;
+
     public List<Board> getMyBoards(String accessToken, String accessSecret) {
         OAuthRequest request = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me/boards");
         String json = executeSignedRequest(request, accessToken, accessSecret);
@@ -36,19 +39,24 @@ public class TrelloClient {
         return convert(json, new TypeReference<List<Board>>() {});
     }
 
-    public Webhook subscribeToModel(String modelId, String webhookPath, String accessToken, String accessSecret) {
+    public Webhook createWebhook(String modelId, String webhookPath, String accessToken, String accessSecret) {
         String callbackUrl = buildCallbackUrl(webhookPath);
-        OAuthRequest request = new OAuthRequest(Verb.POST, "https://api.trello.com/1/webhooks");
-        request.addParameter("callbackURL", callbackUrl);
-        request.addParameter("idModel", modelId);
-        String json = executeSignedRequest(request, accessToken, accessSecret);
+        OAuthRequest createWebhookRequest = new OAuthRequest(Verb.POST, "https://api.trello.com/1/webhooks");
+        createWebhookRequest.addParameter("callbackURL", callbackUrl);
+        createWebhookRequest.addParameter("idModel", modelId);
+        String json = executeSignedRequest(createWebhookRequest, accessToken, accessSecret);
 
         return convert(json, Webhook.class);
     }
 
-    public void unsubscribeFromModel(String webhookId, String accessToken, String accessSecret) {
-        OAuthRequest request = new OAuthRequest(Verb.DELETE, "https://api.trello.com/1/webhooks/" + webhookId);
-        executeSignedRequest(request, accessToken, accessSecret);
+    public void deleteWebhook(String webhookId, String accessToken, String accessSecret) {
+        OAuthRequest deleteWebhookRequest = new OAuthRequest(Verb.DELETE, "https://api.trello.com/1/webhooks/" + webhookId);
+        executeSignedRequest(deleteWebhookRequest, accessToken, accessSecret);
+    }
+
+    public void deleteToken(String token, String tokenSecret) {
+        OAuthRequest deleteTokenRequest = new OAuthRequest(Verb.DELETE, "https://trello.com/1/tokens/" + token);
+        executeSignedRequest(deleteTokenRequest, token, tokenSecret);
     }
 
     private String executeSignedRequest(OAuthRequest request, String accessToken, String accessSecret) {
@@ -81,8 +89,8 @@ public class TrelloClient {
         }
     }
 
-    private String buildCallbackUrl(String webhookPath) {
-        return appUrl + "/" + webhookPath;
+    private String buildCallbackUrl(String path) {
+        return appUrl + webhookPath + "/" + path;
     }
 }
 
