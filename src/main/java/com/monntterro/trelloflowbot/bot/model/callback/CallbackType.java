@@ -6,5 +6,7 @@ public enum CallbackType {
     UNSUBSCRIBE,
     SETTINGS,
     MENU,
-    MY_BOARDS
+    ACCOUNT_SETTINGS,
+    LOGOUT,
+    LOGOUT_PREPARE, MY_BOARDS
 }

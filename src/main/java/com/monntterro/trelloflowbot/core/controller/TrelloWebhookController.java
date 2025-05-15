@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
+@RequestMapping("${trello.webhook.path}")
 @RequiredArgsConstructor
-public class TrelloUpdateController {
+public class TrelloWebhookController {
     private final UpdateConsumer updateConsumer;
 
     /**

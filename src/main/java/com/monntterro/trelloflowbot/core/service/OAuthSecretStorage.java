@@ -1,6 +1,8 @@
 package com.monntterro.trelloflowbot.core.service;
 
+import java.util.Optional;
+
 public interface OAuthSecretStorage {
 
-    String getSecretToken(String token);
+    Optional<String> getSecretToken(String token);
 }

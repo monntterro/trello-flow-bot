@@ -32,9 +32,11 @@ encryption:
 app:
   url: ${APP_URL}
 trello:
+  webhook:
+    path: /trello/webhook
   api:
     auth_token:
-      expiration: 30days
+      expiration: never
     key: ${TRELLO_API_KEY}
     secret: ${TRELLO_API_SECRET}
     path: /oauth/callback

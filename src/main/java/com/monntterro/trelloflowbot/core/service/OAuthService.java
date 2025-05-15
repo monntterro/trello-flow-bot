@@ -14,8 +14,6 @@ import java.util.concurrent.ExecutionException;
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
-    private final OAuthManager oAuthManager;
-    private final OAuthSecretStorage oAuthSecretStorage;
     private final OAuth10aService oAuth10aService;
 
     @Value("${trello.api.auth_token.expiration}")
@@ -38,17 +36,5 @@ public class OAuthService {
 
         String url = oAuth10aService.getAuthorizationUrl(requestToken);
         return parameterList.appendTo(url);
-    }
-
-    public String getSecretToken(String token) {
-        return oAuthSecretStorage.getSecretToken(token);
-    }
-
-    public void successAuth(OAuth1AccessToken accessToken, String token) {
-        oAuthManager.successAuth(accessToken, token);
-    }
-
-    public void failureAuth(String token) {
-        oAuthManager.failureAuth(token);
     }
 }
