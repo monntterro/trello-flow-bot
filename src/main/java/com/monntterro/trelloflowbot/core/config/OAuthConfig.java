@@ -15,13 +15,12 @@ public class OAuthConfig {
     private String apiSecret;
     @Value("${app.url}")
     private String appUrl;
-    @Value("${trello.api.callback}")
-    private String callback;
+    @Value("${trello.api.path}")
+    private String path;
 
     @Bean
     public OAuth10aService oauth10aService() {
-        String callbackUrl = appUrl + callback;
-        System.out.println(callbackUrl);
+        String callbackUrl = appUrl + path;
         return new ServiceBuilder(apiKey)
                 .apiSecret(apiSecret)
                 .callback(callbackUrl)

@@ -16,7 +16,7 @@ public class TrelloOAuthController {
     private final MessageResource messageResource;
     private final OAuthService oAuthService;
 
-    @GetMapping("${trello.api.callback}")
+    @GetMapping("${trello.api.path}")
     public ResponseEntity<String> callback(@RequestParam("oauth_token") String token,
                                            @RequestParam("oauth_verifier") String verifier) {
         String tokenSecret = oAuthService.getSecretToken(token);
