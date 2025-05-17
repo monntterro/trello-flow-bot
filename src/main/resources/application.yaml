@@ -5,7 +5,7 @@ spring:
   application:
     name: trello-flow-bot
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   flyway:
@@ -29,15 +29,22 @@ spring:
 encryption:
   key: ${ENCRYPTION_KEY}
   salt: ${ENCRYPTION_SALT}
+app:
+  url: ${APP_URL}
 trello:
-  api:
-    baseUrl: https://api.trello.com/1
   webhook:
-    baseUrl: ${TRELLO_WEBHOOKS_BASE_URL}
+    path: /trello/webhook
+  api:
+    auth_token:
+      expiration: never
+    key: ${TRELLO_API_KEY}
+    secret: ${TRELLO_API_SECRET}
+    path: /oauth/callback
 telegram:
   callback:
     expiration: 1m
     cleanup:
       interval.secs: 10
   bot:
+    path: bot
     token: ${BOT_TOKEN}

@@ -3,14 +3,14 @@ package com.monntterro.trelloflowbot.bot.handler;
 import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
-import com.monntterro.trelloflowbot.bot.entity.user.State;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.model.callback.CallbackData;
 import com.monntterro.trelloflowbot.bot.model.callback.CallbackType;
-import com.monntterro.trelloflowbot.bot.service.TelegramBot;
-import com.monntterro.trelloflowbot.bot.service.TrelloClientFacade;
 import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
 import com.monntterro.trelloflowbot.bot.service.UserService;
+import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
+import com.monntterro.trelloflowbot.bot.service.trello.TrelloAccountService;
+import com.monntterro.trelloflowbot.bot.service.trello.TrelloClientFacade;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
@@ -39,6 +39,7 @@ public class CallbackHandler {
     private final TrelloClientFacade trelloClientFacade;
     private final TrelloModelService trelloModelService;
     private final MessageResource messageResource;
+    private final TrelloAccountService accountService;
 
     public void handle(CallbackQuery callbackQuery) {
         String callbackQueryData = callbackQuery.getData();
@@ -55,25 +56,80 @@ public class CallbackHandler {
             case GET_BOARD -> getBoard(callbackQuery, callbackData.getData());
             case SUBSCRIBE -> subscribeToModel(callbackQuery, callbackData.getData());
             case UNSUBSCRIBE -> unsubscribeFromModel(callbackQuery, callbackData.getData());
+            case ACCOUNT_SETTINGS -> accountSettings(callbackQuery);
+            case LOGOUT -> logout(callbackQuery);
+            case LOGOUT_PREPARE -> logoutPrepare(callbackQuery);
             case SETTINGS -> setting(callbackQuery);
-            case SEND_TRELLO_CREDENTIALS -> sendTrelloCredentials(callbackQuery);
         }
     }
 
-    private void sendTrelloCredentials(CallbackQuery callbackQuery) {
-        User user = getUser(callbackQuery);
-        user.setState(State.CHANGE_TRELLO_TOKEN_AND_KEY);
-        userService.save(user);
-
-        String text = messageResource.getMessage("settings.token_and_key.set.text");
+    private void logoutPrepare(CallbackQuery callbackQuery) {
+        String text = messageResource.getMessage("account.logout.prepare");
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
-        bot.editMessageWithMarkdown(text, chatId, messageId);
+
+        String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+        String logoutCallbackData = JsonParser.create().with("type", CallbackType.LOGOUT).toJson();
+        Bucket bucket = dataCache.createBucket();
+        String settingsCallbackDataId = bucket.put(settingsCallbackData);
+        String logoutCallbackDataId = bucket.put(logoutCallbackData);
+
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button(messageResource.getMessage("account.logout"), logoutCallbackDataId)),
+                row(button(messageResource.getMessage("button.back"), settingsCallbackDataId))
+        );
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private void logout(CallbackQuery callbackQuery) {
+        long userTelegramId = callbackQuery.getFrom().getId();
+        accountService.removeAccount(userTelegramId);
+
+        String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
+        Bucket bucket = dataCache.createBucket();
+        String menuCallbackDataId = bucket.put(menuCallbackData);
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
+        );
+
+        String text = messageResource.getMessage("account.logout.success");
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private void accountSettings(CallbackQuery callbackQuery) {
+        String text = messageResource.getMessage("account.text");
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+        String logoutCallbackData = JsonParser.create().with("type", CallbackType.LOGOUT_PREPARE).toJson();
+
+        Bucket bucket = dataCache.createBucket();
+        String settingsCallbackDataId = bucket.put(settingsCallbackData);
+        String logoutCallbackDataId = bucket.put(logoutCallbackData);
+
+        String url;
+        try {
+            accountService.removeAccount(callbackQuery.getFrom().getId());
+            url = accountService.getLoginUrl(callbackQuery.getFrom().getId());
+        } catch (Exception e) {
+            bot.sendMessage(messageResource.getMessage("error.text"), chatId);
+            return;
+        }
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(urlButton(messageResource.getMessage("account.login"), url)),
+                row(button(messageResource.getMessage("account.logout"), logoutCallbackDataId)),
+                row(button(messageResource.getMessage("button.back"), settingsCallbackDataId))
+        );
+        bot.editMessage(text, chatId, messageId, markup);
     }
 
     private void menu(CallbackQuery callbackQuery) {
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+
         Bucket bucket = dataCache.createBucket();
         String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
         String settingsCallbackDataId = bucket.put(settingsCallbackData);
@@ -90,24 +146,23 @@ public class CallbackHandler {
     }
 
     private void setting(CallbackQuery callbackQuery) {
-        String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
-        String sendTrelloCredentialsCallbackData = JsonParser.create()
-                .with("type", CallbackType.SEND_TRELLO_CREDENTIALS)
-                .toJson();
+        long chatId = callbackQuery.getMessage().getChatId();
 
         Bucket bucket = dataCache.createBucket();
+        String accountCallbackData = JsonParser.create().with("type", CallbackType.ACCOUNT_SETTINGS).toJson();
+        String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
+        String accountCallbackDataId = bucket.put(accountCallbackData);
         String menuCallbackDataId = bucket.put(menuCallbackData);
-        String sendTrelloCredentialsCallbackDataId = bucket.put(sendTrelloCredentialsCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.set_trello_credentials.text"), sendTrelloCredentialsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.account"), accountCallbackDataId)),
                 row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
         );
 
         String text = messageResource.getMessage("settings.text");
-        long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId, markup);
     }
+
 
     private void unsupportedMessage(CallbackQuery callbackQuery) {
         String text = messageResource.getMessage("callback.unsupported");
@@ -225,13 +280,12 @@ public class CallbackHandler {
         User user = getUser(callbackQuery);
         int messageId = callbackQuery.getMessage().getMessageId();
 
-        if (user.getTrelloApiKey() == null || user.getTrelloApiKey().isBlank()) {
+        if (user.getToken() == null || user.getToken().isBlank()) {
             String text = messageResource.getMessage("user.not.registered");
             long chatId = callbackQuery.getMessage().getChatId();
             bot.editMessage(text, chatId, messageId);
             return;
         }
-
 
         Bucket bucket = dataCache.createBucket();
         List<TrelloModel> userBoards;
@@ -266,7 +320,7 @@ public class CallbackHandler {
     }
 
     private void sendEditAuthenticationErrorMessage(User user, int messageId) {
-        String text = messageResource.getMessage("trello.authentication.error");
+        String text = messageResource.getMessage("user.authentication.error");
         bot.editMessage(text, user.getChatId(), messageId);
     }
 

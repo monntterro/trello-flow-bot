@@ -10,5 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "telegram.bot")
 public class TelegramBotProperties {
+    private String path;
     private String token;
 }

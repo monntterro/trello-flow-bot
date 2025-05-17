@@ -1,7 +1,7 @@
 package com.monntterro.trelloflowbot.core.controller;
 
-import com.monntterro.trelloflowbot.core.handler.TrelloUpdateHandler;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
+import com.monntterro.trelloflowbot.core.service.UpdateConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
+@RequestMapping("${trello.webhook.path}")
 @RequiredArgsConstructor
-public class TrelloUpdateController {
-    private final TrelloUpdateHandler trelloUpdateHandler;
+public class TrelloWebhookController {
+    private final UpdateConsumer updateConsumer;
 
     /**
      * HEAD validation endpoint required by Trello webhook API.
@@ -25,9 +26,9 @@ public class TrelloUpdateController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<Void> handleUpdate(@PathVariable("id") String webhookId,
-                                             @RequestBody TrelloUpdate trelloUpdate) {
-        trelloUpdateHandler.handle(trelloUpdate, webhookId);
+    public ResponseEntity<Void> consumeUpdate(@PathVariable("id") String webhookId,
+                                              @RequestBody TrelloUpdate trelloUpdate) {
+        updateConsumer.consume(trelloUpdate, webhookId);
         return ResponseEntity.ok().build();
     }
 }

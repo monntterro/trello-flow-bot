@@ -1,55 +1,36 @@
-package com.monntterro.trelloflowbot.bot.service;
+package com.monntterro.trelloflowbot.bot.service.bot;
 
 import com.monntterro.trelloflowbot.bot.config.props.TelegramBotProperties;
 import com.monntterro.trelloflowbot.bot.handler.UpdateHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
-import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
-import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
-import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.telegram.telegrambots.webhook.starter.AfterBotRegistration;
+import org.telegram.telegrambots.webhook.starter.SpringTelegramWebhookBot;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Service
-public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+public class TelegramBot extends SpringTelegramWebhookBot {
     private final TelegramClient telegramClient;
-    private final TelegramBotProperties properties;
-    private final UpdateHandler updateHandler;
 
-    public TelegramBot(TelegramBotProperties properties, @Lazy UpdateHandler updateHandler) {
-        this.properties = properties;
-        this.updateHandler = updateHandler;
+    @Autowired
+    public TelegramBot(TelegramBotProperties properties, @Lazy UpdateHandler updateHandler,
+                       WebhookService webhookService) {
+        super(properties.getPath(), updateHandler::handle, webhookService::setWebhook, webhookService::deleteWebhook);
         this.telegramClient = new OkHttpTelegramClient(properties.getToken());
-    }
-
-    @Override
-    public void consume(Update update) {
-        updateHandler.handle(update);
-    }
-
-    @Override
-    public String getBotToken() {
-        return properties.getToken();
-    }
-
-    @Override
-    public LongPollingUpdateConsumer getUpdatesConsumer() {
-        return this;
     }
 
     @AfterBotRegistration
@@ -60,7 +41,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
     private void setCommands() {
         List<BotCommand> commands = Arrays.asList(
                 new BotCommand("/menu", "Открыть меню"),
-                new BotCommand("/set_token_and_key", "Установить токен и ключ Trello")
+                new BotCommand("/login", "Авторизоваться через Trello")
         );
 
         SetMyCommands setMyCommands = new SetMyCommands(commands);
@@ -140,38 +121,11 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingSingleThrea
         }
     }
 
-    public void editMessageWithMarkdown(String text, long chatId, int messageId) {
-        EditMessageText sendMessage = EditMessageText.builder()
-                .text(text)
-                .chatId(chatId)
-                .messageId(messageId)
-                .parseMode(ParseMode.MARKDOWNV2)
-                .build();
-        try {
-            telegramClient.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
-    }
-
     public void sendMessage(String text, long chatId, List<MessageEntity> entities) {
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
                 .entities(entities)
-                .build();
-        try {
-            telegramClient.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    public void sendMessageWithMarkdown(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .text(text)
-                .chatId(chatId)
-                .parseMode(ParseMode.MARKDOWNV2)
                 .build();
         try {
             telegramClient.execute(sendMessage);

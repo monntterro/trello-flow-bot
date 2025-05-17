@@ -1,20 +1,24 @@
-package com.monntterro.trelloflowbot.bot.service;
+package com.monntterro.trelloflowbot.bot.service.trello;
 
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.service.UserService;
+import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
+import com.monntterro.trelloflowbot.core.service.UpdateConsumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class TrelloUpdateConsumer {
+public class TrelloUpdateConsumer implements UpdateConsumer {
     private final TelegramBot bot;
     private final UserService userService;
 
+    @Override
     public void consume(TrelloUpdate trelloUpdate, String webhookId) {
         if (trelloUpdate.getAction().getDisplay().getTranslationKey() == TranslationKey.UNKNOWN) {
             return;
