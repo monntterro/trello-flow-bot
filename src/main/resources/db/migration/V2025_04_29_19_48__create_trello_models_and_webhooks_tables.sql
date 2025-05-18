@@ -15,8 +15,8 @@ CREATE TABLE trello_models
 CREATE TABLE trello_webhooks
 (
     id              VARCHAR(255) NOT NULL,
-    trello_model_id BIGINT,
-    user_id         BIGINT,
+    trello_model_id BIGINT NOT NULL,
+    user_id         BIGINT NOT NULL,
 
     CONSTRAINT pk_trello_webhooks PRIMARY KEY (id),
     CONSTRAINT fk_trello_webhooks_on_trello_model FOREIGN KEY (trello_model_id) REFERENCES trello_models (id),

@@ -8,5 +8,6 @@ public enum CallbackType {
     MENU,
     ACCOUNT_SETTINGS,
     LOGOUT,
-    LOGOUT_PREPARE, MY_BOARDS
+    LOGOUT_PREPARE,
+    MY_BOARDS
 }
