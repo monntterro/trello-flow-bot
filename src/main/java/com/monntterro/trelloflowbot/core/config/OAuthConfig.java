@@ -13,10 +13,10 @@ public class OAuthConfig {
     private String apiKey;
     @Value("${trello.api.secret}")
     private String apiSecret;
-    @Value("${app.url}")
-    private String appUrl;
     @Value("${trello.api.path}")
     private String path;
+    @Value("${app.url}")
+    private String appUrl;
 
     @Bean
     public OAuth10aService oauth10aService() {
