@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.processor;
+package com.monntterro.trelloflowbot.bot.handler;
 
 import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
@@ -16,7 +16,7 @@ import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
 
 @Component
 @RequiredArgsConstructor
-public class CommandProcessor {
+public class CommandHandler {
     private static final String START_COMMAND = "/start";
     private static final String LOGIN = "/login";
     private static final String MENU_COMMAND = "/menu";

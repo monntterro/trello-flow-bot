@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.core.api;
+package com.monntterro.trelloflowbot.core.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
