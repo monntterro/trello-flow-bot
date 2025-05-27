@@ -8,7 +8,7 @@ import com.monntterro.trelloflowbot.bot.exception.TrelloModelNotFoundException;
 import com.monntterro.trelloflowbot.bot.exception.TrelloWebhookNotFoundException;
 import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
 import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
-import com.monntterro.trelloflowbot.core.api.TrelloClient;
+import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
 import com.monntterro.trelloflowbot.core.model.Board;
 import com.monntterro.trelloflowbot.core.model.Webhook;
