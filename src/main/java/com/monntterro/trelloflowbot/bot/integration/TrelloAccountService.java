@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.service.trello;
+package com.monntterro.trelloflowbot.bot.integration;
 
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.monntterro.trelloflowbot.bot.entity.user.User;

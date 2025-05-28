@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.service.trello;
+package com.monntterro.trelloflowbot.bot.integration;
 
 import com.monntterro.trelloflowbot.bot.model.OAuthSecret;
 import com.monntterro.trelloflowbot.core.service.OAuthSecretStorage;

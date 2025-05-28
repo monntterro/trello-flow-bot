@@ -1,10 +1,10 @@
-package com.monntterro.trelloflowbot.bot.service.trello;
+package com.monntterro.trelloflowbot.bot.integration;
 
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
-import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.core.service.OAuthManager;
 import lombok.RequiredArgsConstructor;

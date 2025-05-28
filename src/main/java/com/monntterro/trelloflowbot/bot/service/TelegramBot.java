@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.service.bot;
+package com.monntterro.trelloflowbot.bot.service;
 
 import com.monntterro.trelloflowbot.bot.config.props.TelegramBotProperties;
 import com.monntterro.trelloflowbot.bot.handler.UpdateHandler;

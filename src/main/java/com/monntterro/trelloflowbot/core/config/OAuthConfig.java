@@ -9,12 +9,16 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OAuthConfig {
+
     @Value("${trello.api.key}")
     private String apiKey;
+
     @Value("${trello.api.secret}")
     private String apiSecret;
+
     @Value("${trello.api.path}")
     private String path;
+
     @Value("${app.url}")
     private String appUrl;
 

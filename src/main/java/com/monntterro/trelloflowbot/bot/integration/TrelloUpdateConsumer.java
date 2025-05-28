@@ -1,9 +1,9 @@
-package com.monntterro.trelloflowbot.bot.service.trello;
+package com.monntterro.trelloflowbot.bot.integration;
 
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
-import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
