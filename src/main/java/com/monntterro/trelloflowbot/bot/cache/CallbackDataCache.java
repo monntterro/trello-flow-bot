@@ -14,40 +14,28 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Scope("singleton")
 public class CallbackDataCache {
-    private final ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CacheData> cache = new ConcurrentHashMap<>();
 
     @Value("${telegram.callback.expiration}")
     private Duration expiration;
 
-    public Bucket createBucket() {
-        String cacheKey = generateKey();
-        Bucket bucket = new Bucket(cacheKey);
-        cache.put(cacheKey, bucket);
-        return bucket;
+    public boolean contains(String key) {
+        return cache.containsKey(key);
     }
 
-    public boolean contains(String key) {
-        String[] cacheAndBucketKey = key.split("\\s");
-        String cacheKey = cacheAndBucketKey[0];
-
-        return cache.containsKey(cacheKey);
+    public String put(String data) {
+        CacheData cacheData = new CacheData(data);
+        String key = UUID.randomUUID().toString();
+        cache.put(key, cacheData);
+        return key;
     }
 
     public String getAndRemove(String key) {
-        String[] cacheAndBucketKey = key.split("\\s");
-        String cacheKey = cacheAndBucketKey[0];
-        String bucketKey = cacheAndBucketKey[1];
-
-        Bucket bucket = cache.remove(cacheKey);
-        return bucket.get(bucketKey);
+        return cache.remove(key).getData();
     }
 
-    private String generateKey() {
-        return UUID.randomUUID().toString().substring(0, 25);
-    }
-
-    @Scheduled(fixedDelayString = "${telegram.callback.cleanup.interval.secs:600}", timeUnit = TimeUnit.SECONDS)
-    public void cleanUp() {
+    @Scheduled(fixedDelayString = "${telegram.callback.cleanup.interval.secs:60}", timeUnit = TimeUnit.SECONDS)
+    private void cleanUp() {
         LocalDateTime now = LocalDateTime.now();
         cache.entrySet().removeIf(
                 entry -> entry.getValue().getCreatedAt().plusSeconds(expiration.getSeconds()).isBefore(now)

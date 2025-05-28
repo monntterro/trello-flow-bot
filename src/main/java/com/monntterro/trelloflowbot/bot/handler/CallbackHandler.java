@@ -1,6 +1,5 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
-import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
@@ -70,9 +69,8 @@ public class CallbackHandler {
 
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
         String logoutCallbackData = JsonParser.create().with("type", CallbackType.LOGOUT).toJson();
-        Bucket bucket = dataCache.createBucket();
-        String settingsCallbackDataId = bucket.put(settingsCallbackData);
-        String logoutCallbackDataId = bucket.put(logoutCallbackData);
+        String settingsCallbackDataId = dataCache.put(settingsCallbackData);
+        String logoutCallbackDataId = dataCache.put(logoutCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("account.logout"), logoutCallbackDataId)),
@@ -86,8 +84,7 @@ public class CallbackHandler {
         accountService.removeAccount(userTelegramId);
 
         String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
-        Bucket bucket = dataCache.createBucket();
-        String menuCallbackDataId = bucket.put(menuCallbackData);
+        String menuCallbackDataId = dataCache.put(menuCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
         );
@@ -106,13 +103,11 @@ public class CallbackHandler {
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
         String logoutCallbackData = JsonParser.create().with("type", CallbackType.LOGOUT_PREPARE).toJson();
 
-        Bucket bucket = dataCache.createBucket();
-        String settingsCallbackDataId = bucket.put(settingsCallbackData);
-        String logoutCallbackDataId = bucket.put(logoutCallbackData);
+        String settingsCallbackDataId = dataCache.put(settingsCallbackData);
+        String logoutCallbackDataId = dataCache.put(logoutCallbackData);
 
         String url;
         try {
-            accountService.removeAccount(callbackQuery.getFrom().getId());
             url = accountService.getLoginUrl(callbackQuery.getFrom().getId());
         } catch (Exception e) {
             bot.sendMessage(messageResource.getMessage("error.text"), chatId);
@@ -130,9 +125,8 @@ public class CallbackHandler {
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
 
-        Bucket bucket = dataCache.createBucket();
-        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
-        String settingsCallbackDataId = bucket.put(settingsCallbackData);
+        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+        String settingsCallbackDataId = dataCache.put(settingsCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
@@ -148,11 +142,10 @@ public class CallbackHandler {
     private void setting(CallbackQuery callbackQuery) {
         long chatId = callbackQuery.getMessage().getChatId();
 
-        Bucket bucket = dataCache.createBucket();
         String accountCallbackData = JsonParser.create().with("type", CallbackType.ACCOUNT_SETTINGS).toJson();
         String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
-        String accountCallbackDataId = bucket.put(accountCallbackData);
-        String menuCallbackDataId = bucket.put(menuCallbackData);
+        String accountCallbackDataId = dataCache.put(accountCallbackData);
+        String menuCallbackDataId = dataCache.put(menuCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("menu.account"), accountCallbackDataId)),
                 row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
@@ -191,8 +184,7 @@ public class CallbackHandler {
         }
 
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
-        Bucket bucket = dataCache.createBucket();
-        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
+        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
 
         String text = messageResource.getMessage("user.unsubscribe.success");
         InlineKeyboardMarkup markup = inlineKeyboard(row(button(messageResource.getMessage("button.back"), myBoardsCallbackDataId)));
@@ -221,8 +213,7 @@ public class CallbackHandler {
         }
 
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
-        Bucket bucket = dataCache.createBucket();
-        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
+        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
 
         String text = messageResource.getMessage("user.subscribe.success");
         InlineKeyboardMarkup markup = inlineKeyboard(row(button(messageResource.getMessage("button.back"), myBoardsCallbackDataId)));
@@ -241,15 +232,14 @@ public class CallbackHandler {
                 .orElseThrow(() -> new RuntimeException("Trello model not found"));
 
         List<InlineKeyboardRow> rows = new ArrayList<>();
-        Bucket bucket = dataCache.createBucket();
         if (trelloModel.isSubscribed()) {
-            rows.add(row(unsubscribeButton(bucket, modelId)));
+            rows.add(row(unsubscribeButton(modelId)));
         } else {
-            rows.add(row(subscribeButton(bucket, modelId)));
+            rows.add(row(subscribeButton(modelId)));
         }
 
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
-        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
+        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
         rows.add(row(button(messageResource.getMessage("button.back"), myBoardsCallbackDataId)));
 
         InlineKeyboardMarkup markup = inlineKeyboard(rows);
@@ -258,21 +248,21 @@ public class CallbackHandler {
         bot.editMessage(text, chatId, messageId, messageEntities, markup);
     }
 
-    private InlineKeyboardButton unsubscribeButton(Bucket bucket, String modelId) {
+    private InlineKeyboardButton unsubscribeButton(String modelId) {
         String unsubscribeCallbackData = JsonParser.create()
                 .with("type", CallbackType.UNSUBSCRIBE)
                 .with("modelId", modelId)
                 .toJson();
-        String unsubscribeCallbackDataId = bucket.put(unsubscribeCallbackData);
+        String unsubscribeCallbackDataId = dataCache.put(unsubscribeCallbackData);
         return button(messageResource.getMessage("model.unsubscribe"), unsubscribeCallbackDataId);
     }
 
-    private InlineKeyboardButton subscribeButton(Bucket bucket, String modelId) {
+    private InlineKeyboardButton subscribeButton(String modelId) {
         String subscribeCallbackData = JsonParser.create()
                 .with("type", CallbackType.SUBSCRIBE)
                 .with("modelId", modelId)
                 .toJson();
-        String subscribeCallbackDataId = bucket.put(subscribeCallbackData);
+        String subscribeCallbackDataId = dataCache.put(subscribeCallbackData);
         return button(messageResource.getMessage("model.subscribe"), subscribeCallbackDataId);
     }
 
@@ -287,7 +277,6 @@ public class CallbackHandler {
             return;
         }
 
-        Bucket bucket = dataCache.createBucket();
         List<TrelloModel> userBoards;
         try {
             userBoards = trelloClientFacade.getUserBoards(user);
@@ -304,14 +293,14 @@ public class CallbackHandler {
                             .with("name", board.getName())
                             .with("url", board.getUrl())
                             .toJson();
-                    String callbackDataId = bucket.put(callbackData);
+                    String callbackDataId = dataCache.put(callbackData);
                     String text = "%s %s".formatted(board.getName(), board.isSubscribed() ? "✅" : "❌");
                     return row(button(text, callbackDataId));
                 })
                 .collect(Collectors.toList());
 
         String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
-        String menuCallbackDataId = bucket.put(menuCallbackData);
+        String menuCallbackDataId = dataCache.put(menuCallbackData);
         rows.add(row(button(messageResource.getMessage("button.back"), menuCallbackDataId)));
 
         String text = messageResource.getMessage("menu.choose.board");
