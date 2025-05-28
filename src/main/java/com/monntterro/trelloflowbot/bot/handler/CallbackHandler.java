@@ -112,7 +112,6 @@ public class CallbackHandler {
 
         String url;
         try {
-            accountService.removeAccount(callbackQuery.getFrom().getId());
             url = accountService.getLoginUrl(callbackQuery.getFrom().getId());
         } catch (Exception e) {
             bot.sendMessage(messageResource.getMessage("error.text"), chatId);
