@@ -1,10 +1,9 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
-import com.monntterro.trelloflowbot.bot.cache.Bucket;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
-import com.monntterro.trelloflowbot.bot.model.callback.CallbackType;
-import com.monntterro.trelloflowbot.bot.service.bot.TelegramBot;
-import com.monntterro.trelloflowbot.bot.service.trello.TrelloAccountService;
+import com.monntterro.trelloflowbot.bot.integration.TrelloAccountService;
+import com.monntterro.trelloflowbot.bot.model.CallbackType;
+import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +39,8 @@ public class CommandHandler {
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
 
-        Bucket bucket = dataCache.createBucket();
-        String myBoardsCallbackDataId = bucket.put(myBoardsCallbackData);
-        String settingsCallbackDataId = bucket.put(settingsCallbackData);
+        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+        String settingsCallbackDataId = dataCache.put(settingsCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings"), settingsCallbackDataId))

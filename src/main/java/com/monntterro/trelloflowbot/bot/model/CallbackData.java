@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.model.callback;
+package com.monntterro.trelloflowbot.bot.model;
 
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import lombok.AllArgsConstructor;
