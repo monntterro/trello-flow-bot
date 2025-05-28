@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.model.callback;
+package com.monntterro.trelloflowbot.bot.model;
 
 public enum CallbackType {
     GET_BOARD,

@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.service.trello;
+package com.monntterro.trelloflowbot.bot.integration;
 
 import com.monntterro.trelloflowbot.bot.entity.TrelloWebhook;
 import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
