@@ -1,4 +1,4 @@
-package com.monntterro.trelloflowbot.bot.utils;
+package com.monntterro.trelloflowbot.bot.integration.consumer;
 
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;

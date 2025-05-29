@@ -1,42 +1,24 @@
-package com.monntterro.trelloflowbot.bot.integration;
+package com.monntterro.trelloflowbot.bot.integration.consumer;
 
 import com.monntterro.trelloflowbot.bot.entity.user.User;
-import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
-import com.monntterro.trelloflowbot.bot.service.UserService;
-import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
-import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
-import com.monntterro.trelloflowbot.core.service.UpdateConsumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class TrelloUpdateConsumer implements UpdateConsumer {
+public class NotificationSender {
     private final TelegramBot bot;
-    private final UserService userService;
 
-    @Override
-    public void consume(TrelloUpdate trelloUpdate, String webhookId) {
-        if (trelloUpdate.getAction().getDisplay().getTranslationKey() == TranslationKey.UNKNOWN) {
-            return;
-        }
+    public void send(TrelloUpdate trelloUpdate, User user) {
+        TelegramMessage message = TelegramMessage.create();
+        appendHeader(message, trelloUpdate);
+        appendUserInfo(message, trelloUpdate);
+        appendAction(message, trelloUpdate);
 
-        User user = userService.findById(Long.parseLong(webhookId))
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        notifyUser(user, trelloUpdate);
-    }
-
-    public void notifyUser(User user, TrelloUpdate trelloUpdate) {
-        TelegramMessage telegramMessage = TelegramMessage.create();
-
-        appendHeader(telegramMessage, trelloUpdate);
-        appendUserInfo(telegramMessage, trelloUpdate);
-        appendAction(telegramMessage, trelloUpdate);
-
-        bot.sendMessage(telegramMessage.getText(), user.getChatId(), telegramMessage.getEntities());
+        bot.sendMessage(message.getText(), user.getChatId(), message.getEntities());
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {
@@ -54,12 +36,8 @@ public class TrelloUpdateConsumer implements UpdateConsumer {
 
     private void appendAction(TelegramMessage text, TrelloUpdate trelloUpdate) {
         switch (trelloUpdate.getAction().getDisplay().getTranslationKey()) {
-            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST:
-                appendCardMoveAction(text, trelloUpdate);
-                break;
-            case ACTION_COMMENT_ON_CARD:
-                appendCommentAction(text, trelloUpdate);
-                break;
+            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> appendCardMoveAction(text, trelloUpdate);
+            case ACTION_COMMENT_ON_CARD -> appendCommentAction(text, trelloUpdate);
         }
     }
 

@@ -10,6 +10,8 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
 import com.monntterro.trelloflowbot.core.model.Board;
+import com.monntterro.trelloflowbot.core.model.Card;
+import com.monntterro.trelloflowbot.core.model.Member;
 import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +59,19 @@ public class TrelloClient {
     public void deleteToken(String token, String tokenSecret) {
         OAuthRequest deleteTokenRequest = new OAuthRequest(Verb.DELETE, "https://trello.com/1/tokens/" + token);
         executeSignedRequest(deleteTokenRequest, token, tokenSecret);
+    }
+
+    public Member getMe(String accessToken, String accessSecret) {
+        OAuthRequest getMeRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me");
+        String json = executeSignedRequest(getMeRequest, accessToken, accessSecret);
+        return convert(json, Member.class);
+    }
+
+    public Card getCard(String cardId, String accessToken, String accessSecret) {
+        OAuthRequest getCardRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/cards/" + cardId);
+        String json = executeSignedRequest(getCardRequest, accessToken, accessSecret);
+
+        return convert(json, Card.class);
     }
 
     private String executeSignedRequest(OAuthRequest request, String accessToken, String accessSecret) {
