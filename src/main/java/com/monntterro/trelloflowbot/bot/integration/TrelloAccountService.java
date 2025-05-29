@@ -3,6 +3,8 @@ package com.monntterro.trelloflowbot.bot.integration;
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
+import com.monntterro.trelloflowbot.bot.repository.TrelloModelRepository;
+import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.core.service.OAuthService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ public class TrelloAccountService {
     private final OAuthService oAuthService;
     private final UserService userService;
     private final TrelloClientFacade trelloClientFacade;
+    private final TrelloModelRepository trelloModelRepository;
+    private final TrelloWebhookRepository trelloWebhookRepository;
 
     public String getLoginUrl(long userTelegramId) throws IOException, ExecutionException, InterruptedException {
         OAuth1RequestToken requestToken = oAuthService.getRequestToken();
@@ -34,10 +38,16 @@ public class TrelloAccountService {
         }
         trelloClientFacade.removeUserToken(user);
 
+
+        user.setTrelloMemberId(null);
         user.setToken(null);
         user.setTokenSecret(null);
+
+        trelloModelRepository.deleteAll(user.getTrelloModels());
+        trelloWebhookRepository.deleteAll(user.getTrelloWebhooks());
         user.getTrelloModels().clear();
         user.getTrelloWebhooks().clear();
+
         userService.save(user);
     }
 }
