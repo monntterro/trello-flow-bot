@@ -61,6 +61,10 @@ public class TrelloClientFacade {
         return true;
     }
 
+    public void removeUserToken(User user) {
+        trelloClient.deleteToken(user.getToken(), user.getTokenSecret());
+    }
+
     private List<TrelloModel> mapToTrelloModels(List<Board> boards, User user) {
         return boards.stream()
                 .map(board -> TrelloModel.builder()
@@ -91,9 +95,5 @@ public class TrelloClientFacade {
 
         trelloModel.setSubscribed(false);
         trelloModelService.save(trelloModel);
-    }
-
-    public void removeUserToken(User user) {
-        trelloClient.deleteToken(user.getToken(), user.getTokenSecret());
     }
 }

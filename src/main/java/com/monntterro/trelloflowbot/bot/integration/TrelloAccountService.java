@@ -26,7 +26,7 @@ public class TrelloAccountService {
     }
 
     public void removeAccount(long userTelegramId) {
-        oAuthSecretStorage.remove(userTelegramId);
+        oAuthSecretStorage.removeByToken(userTelegramId);
         User user = userService.findByTelegramId(userTelegramId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         if (user.getToken() == null || user.getTokenSecret() == null) {

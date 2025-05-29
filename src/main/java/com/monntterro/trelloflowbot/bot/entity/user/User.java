@@ -41,6 +41,9 @@ public class User {
     @Column(name = "token_secret")
     private String tokenSecret;
 
+    @Column(name = "trello_member_id")
+    private String trelloMemberId;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TrelloModel> trelloModels = new ArrayList<>();
 
