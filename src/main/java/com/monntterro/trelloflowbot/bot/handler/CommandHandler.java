@@ -60,7 +60,6 @@ public class CommandHandler {
 
         String url;
         try {
-            accountService.removeAccount(message.getFrom().getId());
             url = accountService.getLoginUrl(message.getFrom().getId());
         } catch (Exception e) {
             bot.sendMessage(messageResource.getMessage("error.text"), chatId);
