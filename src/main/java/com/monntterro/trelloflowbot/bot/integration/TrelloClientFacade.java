@@ -1,97 +1,96 @@
 package com.monntterro.trelloflowbot.bot.integration;
 
+import com.monntterro.trelloflowbot.bot.entity.BoardModel;
+import com.monntterro.trelloflowbot.bot.entity.ListModel;
 import com.monntterro.trelloflowbot.bot.entity.TrelloWebhook;
-import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
-import com.monntterro.trelloflowbot.bot.entity.trellomodel.Type;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
-import com.monntterro.trelloflowbot.bot.exception.TrelloModelNotFoundException;
-import com.monntterro.trelloflowbot.bot.exception.TrelloWebhookNotFoundException;
 import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
-import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
+import com.monntterro.trelloflowbot.bot.service.BoardModelService;
+import com.monntterro.trelloflowbot.bot.service.ListModelService;
 import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
+import com.monntterro.trelloflowbot.core.model.Board;
 import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TrelloClientFacade {
-    private final TrelloModelService trelloModelService;
+    private final BoardModelService boardModelService;
+    private final ListModelService listModelService;
     private final TrelloWebhookRepository trelloWebhookRepository;
     private final TrelloClient trelloClient;
 
-    public boolean subscribeToModel(String modelId, String webhookPath, User user) throws AuthenticationException {
-        TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
-                .orElseThrow(() -> new TrelloModelNotFoundException("Model not found with ID: " + modelId));
-        if (trelloModel.isSubscribed()) {
-            return false;
+    public void subscribeToList(Long listId, User user) throws AuthenticationException {
+        ListModel listModel = listModelService.findById(listId).orElseThrow();
+        listModel.setSubscribed(true);
+        listModelService.save(listModel);
+
+        BoardModel boardModel = listModel.getBoardModel();
+        if (!boardModel.isSubscribed()) {
+            boardModel.setSubscribed(true);
+            boardModelService.save(boardModel);
+
+            String webhookPath = user.getId().toString();
+            Webhook webhook = trelloClient.createWebhook(boardModel.getModelId(), webhookPath, user.getToken(), user.getTokenSecret());
+
+            TrelloWebhook trelloWebhook = TrelloWebhook.builder()
+                    .id(webhook.getId())
+                    .user(user)
+                    .boardModel(boardModel)
+                    .build();
+            trelloWebhookRepository.save(trelloWebhook);
         }
-
-        Webhook webhook = trelloClient.createWebhook(modelId, webhookPath, user.getToken(), user.getTokenSecret());
-        saveSubscription(trelloModel, webhook, user);
-
-        return true;
     }
 
-    public boolean unsubscribeFromModel(String modelId, User user) throws AuthenticationException {
-        TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
-                .orElseThrow(() -> new TrelloModelNotFoundException("Model not found with ID: " + modelId));
-        if (!trelloModel.isSubscribed()) {
-            return false;
+    public void unsubscribeFromList(Long listId, User user) throws AuthenticationException {
+        ListModel listModel = listModelService.findById(listId).orElseThrow();
+        listModel.setSubscribed(false);
+        listModelService.save(listModel);
+
+        BoardModel boardModel = listModel.getBoardModel();
+        if (boardModel.getListModels().stream().noneMatch(ListModel::isSubscribed)) {
+            boardModel.setSubscribed(false);
+            boardModelService.save(boardModel);
+
+            TrelloWebhook trelloWebhook = trelloWebhookRepository.findByBoardModel(boardModel).orElseThrow();
+            trelloWebhookRepository.delete(trelloWebhook);
+            trelloClient.deleteWebhook(trelloWebhook.getId(), user.getToken(), user.getTokenSecret());
         }
-
-        TrelloWebhook trelloWebhook = trelloWebhookRepository.findByTrelloModel(trelloModel)
-                .orElseThrow(() -> new TrelloWebhookNotFoundException("Webhook not found for model: " + modelId));
-        deleteSubscription(trelloModel, trelloWebhook, user);
-
-        return true;
     }
 
     public void removeUserToken(User user) {
         trelloClient.deleteToken(user.getToken(), user.getTokenSecret());
     }
 
-    private List<TrelloModel> mapToTrelloModels(List<com.monntterro.trelloflowbot.core.model.List> boards, User user) {
-        return boards.stream()
-                .map(list -> TrelloModel.builder()
-                        .type(Type.BOARD)
-                        .user(user)
+    public List<ListModel> getListsForBoard(Long boardId, User user) throws AuthenticationException {
+        BoardModel boardModel = boardModelService.findById(boardId).orElseThrow();
+        List<com.monntterro.trelloflowbot.core.model.List> lists = trelloClient.getListsForBoard(boardModel.getModelId(), user.getToken(), user.getTokenSecret());
+        List<ListModel> listModels = lists.stream()
+                .map(list -> ListModel.builder()
                         .modelId(list.getId())
+                        .boardModel(boardModel)
                         .name(list.getName())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
+        return listModelService.saveAllOrUpdate(listModels, boardModel);
     }
 
-    private void saveSubscription(TrelloModel trelloModel, Webhook webhook, User user) {
-        trelloModel.setSubscribed(true);
-        trelloModelService.save(trelloModel);
-
-        TrelloWebhook trelloWebhook = TrelloWebhook.builder()
-                .id(webhook.getId())
-                .user(user)
-                .trelloModel(trelloModel)
-                .build();
-        trelloWebhookRepository.save(trelloWebhook);
-    }
-
-    private void deleteSubscription(TrelloModel trelloModel, TrelloWebhook trelloWebhook, User user) {
-        trelloClient.deleteWebhook(trelloWebhook.getId(), user.getToken(), user.getTokenSecret());
-        trelloWebhookRepository.delete(trelloWebhook);
-
-        trelloModel.setSubscribed(false);
-        trelloModelService.save(trelloModel);
-    }
-
-    public List<TrelloModel> getListsForBoard(String boardId, User user) throws AuthenticationException {
-        List<com.monntterro.trelloflowbot.core.model.List> lists = trelloClient.getListsForBoard(boardId, user.getToken(), user.getTokenSecret());
-
-        List<TrelloModel> trelloModels = mapToTrelloModels(lists, user);
-        return trelloModelService.saveAllOrUpdate(trelloModels, user);
+    public List<BoardModel> getMyBoards(User user) throws AuthenticationException {
+        List<Board> boards = trelloClient.getMyBoards(user.getToken(), user.getTokenSecret());
+        List<BoardModel> boardModels = boards.stream()
+                .map(board -> BoardModel.builder()
+                        .modelId(board.getId())
+                        .url(board.getShortUrl())
+                        .user(user)
+                        .name(board.getName())
+                        .build())
+                .toList();
+        return boardModelService.saveAllOrUpdate(boardModels, user);
     }
 }
