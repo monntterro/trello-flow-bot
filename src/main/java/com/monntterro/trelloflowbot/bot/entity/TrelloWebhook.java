@@ -1,6 +1,5 @@
 package com.monntterro.trelloflowbot.bot.entity;
 
-import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,8 +18,8 @@ public class TrelloWebhook {
     private String id;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "trello_model_id")
-    private TrelloModel trelloModel;
+    @JoinColumn(name = "board_model_id")
+    private BoardModel boardModel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
