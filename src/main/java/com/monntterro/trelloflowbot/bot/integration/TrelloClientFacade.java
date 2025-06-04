@@ -10,7 +10,6 @@ import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
 import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
 import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
-import com.monntterro.trelloflowbot.core.model.Board;
 import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +25,6 @@ public class TrelloClientFacade {
     private final TrelloModelService trelloModelService;
     private final TrelloWebhookRepository trelloWebhookRepository;
     private final TrelloClient trelloClient;
-
-    public List<TrelloModel> getUserBoards(User user) throws AuthenticationException {
-        List<Board> boards = trelloClient.getMyBoards(user.getToken(), user.getTokenSecret());
-        List<TrelloModel> trelloModels = mapToTrelloModels(boards, user);
-
-        return trelloModelService.saveAllOrUpdate(trelloModels, user);
-    }
 
     public boolean subscribeToModel(String modelId, String webhookPath, User user) throws AuthenticationException {
         TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
@@ -65,14 +57,13 @@ public class TrelloClientFacade {
         trelloClient.deleteToken(user.getToken(), user.getTokenSecret());
     }
 
-    private List<TrelloModel> mapToTrelloModels(List<Board> boards, User user) {
+    private List<TrelloModel> mapToTrelloModels(List<com.monntterro.trelloflowbot.core.model.List> boards, User user) {
         return boards.stream()
-                .map(board -> TrelloModel.builder()
+                .map(list -> TrelloModel.builder()
                         .type(Type.BOARD)
-                        .url(board.getShortUrl())
                         .user(user)
-                        .modelId(board.getId())
-                        .name(board.getName())
+                        .modelId(list.getId())
+                        .name(list.getName())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -95,5 +86,12 @@ public class TrelloClientFacade {
 
         trelloModel.setSubscribed(false);
         trelloModelService.save(trelloModel);
+    }
+
+    public List<TrelloModel> getListsForBoard(String boardId, User user) throws AuthenticationException {
+        List<com.monntterro.trelloflowbot.core.model.List> lists = trelloClient.getListsForBoard(boardId, user.getToken(), user.getTokenSecret());
+
+        List<TrelloModel> trelloModels = mapToTrelloModels(lists, user);
+        return trelloModelService.saveAllOrUpdate(trelloModels, user);
     }
 }

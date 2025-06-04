@@ -13,7 +13,9 @@ import com.monntterro.trelloflowbot.bot.service.TrelloModelService;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
+import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
+import com.monntterro.trelloflowbot.core.model.Board;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -23,7 +25,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,7 @@ public class CallbackHandler {
     private final TrelloModelService trelloModelService;
     private final MessageResource messageResource;
     private final TrelloAccountService accountService;
+    private final TrelloClient trelloClient;
 
     public void handle(CallbackQuery callbackQuery) {
         String callbackQueryData = callbackQuery.getData();
@@ -227,15 +229,12 @@ public class CallbackHandler {
         List<MessageEntity> messageEntities = List.of(TelegramMessage.textLink(boardName, boardUrl, text.length() - boardName.length()));
 
         User user = getUser(callbackQuery);
-        String modelId = JsonParser.read(data, "modelId", String.class);
-        TrelloModel trelloModel = trelloModelService.findByModelIdAndUser(modelId, user)
-                .orElseThrow(() -> new RuntimeException("Trello model not found"));
-
+        String boardId = JsonParser.read(data, "id", String.class);
+        List<TrelloModel> lists = trelloClientFacade.getListsForBoard(boardId, user);
         List<InlineKeyboardRow> rows = new ArrayList<>();
-        if (trelloModel.isSubscribed()) {
-            rows.add(row(unsubscribeButton(modelId)));
-        } else {
-            rows.add(row(subscribeButton(modelId)));
+        for (TrelloModel list : lists) {
+            String buttonText = list.getName() + " " + (list.isSubscribed() ? "✅" : "❌");
+            rows.add(row(button(buttonText, "s")));
         }
 
         String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
@@ -277,24 +276,23 @@ public class CallbackHandler {
             return;
         }
 
-        List<TrelloModel> userBoards;
+        List<Board> userBoards;
         try {
-            userBoards = trelloClientFacade.getUserBoards(user);
+            userBoards = trelloClient.getMyBoards(user.getToken(), user.getTokenSecret());
         } catch (AuthenticationException e) {
             sendEditAuthenticationErrorMessage(user, messageId);
             return;
         }
         List<InlineKeyboardRow> rows = userBoards.stream()
-                .sorted(Comparator.comparing(TrelloModel::isSubscribed).reversed())
                 .map(board -> {
                     String callbackData = JsonParser.create()
                             .with("type", CallbackType.GET_BOARD)
-                            .with("modelId", board.getModelId())
+                            .with("id", board.getId())
                             .with("name", board.getName())
-                            .with("url", board.getUrl())
+                            .with("url", board.getShortUrl())
                             .toJson();
                     String callbackDataId = dataCache.put(callbackData);
-                    String text = "%s %s".formatted(board.getName(), board.isSubscribed() ? "✅" : "❌");
+                    String text = board.getName();
                     return row(button(text, callbackDataId));
                 })
                 .collect(Collectors.toList());
