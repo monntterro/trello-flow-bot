@@ -74,6 +74,14 @@ public class TrelloClient {
         return convert(json, Card.class);
     }
 
+    public List<com.monntterro.trelloflowbot.core.model.List> getListsForBoard(String boardId, String token,
+                                                                               String tokenSecret) {
+        OAuthRequest getListsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/boards/" + boardId + "/lists");
+        String json = executeSignedRequest(getListsRequest, token, tokenSecret);
+
+        return convert(json, new TypeReference<List<com.monntterro.trelloflowbot.core.model.List>>() {});
+    }
+
     private String executeSignedRequest(OAuthRequest request, String accessToken, String accessSecret) {
         OAuth1AccessToken token = new OAuth1AccessToken(accessToken, accessSecret);
         oAuthService.signRequest(token, request);
