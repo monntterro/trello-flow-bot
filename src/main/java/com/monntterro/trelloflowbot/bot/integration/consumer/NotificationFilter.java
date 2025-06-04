@@ -19,7 +19,8 @@ public class NotificationFilter {
         this.trelloClient = trelloClient;
         filters = List.of(
                 filterByKnownType(),
-                filterByCardMember()
+                filterByCardMember(),
+                filterBySubscribedLists()
         );
     }
 
@@ -37,6 +38,20 @@ public class NotificationFilter {
             String cardId = update.getAction().getData().getCard().getId();
             Card card = trelloClient.getCard(cardId, user.getToken(), user.getTokenSecret());
             return card.getIdMembers().contains(user.getTrelloMemberId());
+        };
+    }
+
+    private BiPredicate<TrelloUpdate, User> filterBySubscribedLists() {
+        return (update, user) -> {
+            if (update.getAction().getDisplay()
+                        .getTranslationKey() != TranslationKey.ACTION_MOVE_CARD_FROM_LIST_TO_LIST) {
+                return true;
+            }
+
+            String listId = update.getAction().getData().getListAfter().getId();
+            return user.getBoardModels().stream()
+                    .flatMap(boardModel -> boardModel.getListModels().stream())
+                    .anyMatch(listModel -> listModel.getModelId().equals(listId) && listModel.isSubscribed());
         };
     }
 }

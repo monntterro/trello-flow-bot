@@ -2,8 +2,8 @@ package com.monntterro.trelloflowbot.bot.entity.user;
 
 
 import com.monntterro.trelloflowbot.bot.converter.EncryptedStringConverter;
+import com.monntterro.trelloflowbot.bot.entity.BoardModel;
 import com.monntterro.trelloflowbot.bot.entity.TrelloWebhook;
-import com.monntterro.trelloflowbot.bot.entity.trellomodel.TrelloModel;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -45,7 +45,7 @@ public class User {
     private String trelloMemberId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<TrelloModel> trelloModels = new ArrayList<>();
+    private List<BoardModel> boardModels = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TrelloWebhook> trelloWebhooks = new ArrayList<>();
