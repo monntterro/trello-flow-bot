@@ -22,6 +22,11 @@ public class NotificationFilter {
 
     public boolean shouldNotify(TrelloUpdate trelloUpdate, User user) {
         TranslationKey actionType = trelloUpdate.getAction().getDisplay().getTranslationKey();
+
+        if (ownMemberAction(trelloUpdate, user)) {
+            return false;
+        }
+
         return switch (actionType) {
             case ACTION_COMMENT_ON_CARD -> commentOnCard(trelloUpdate, user);
             case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> filterBySubscribedLists().test(trelloUpdate, user);
@@ -33,6 +38,10 @@ public class NotificationFilter {
         return Stream.of(filterByUserMention(),
                          filterByCardMember())
                 .anyMatch(predicate -> predicate.test(trelloUpdate, user));
+    }
+
+    private boolean ownMemberAction(TrelloUpdate trelloUpdate, User user) {
+        return trelloUpdate.getAction().getMemberCreator().getId().equals(user.getTrelloMemberId());
     }
 
     private BiPredicate<TrelloUpdate, User> filterByUserMention() {
