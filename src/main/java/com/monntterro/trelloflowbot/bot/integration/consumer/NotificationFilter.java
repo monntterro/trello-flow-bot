@@ -5,32 +5,41 @@ import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.model.Card;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 @Service
 public class NotificationFilter {
     private final TrelloClient trelloClient;
-    private final List<BiPredicate<TrelloUpdate, User>> filters;
 
+    @Autowired
     public NotificationFilter(TrelloClient trelloClient) {
         this.trelloClient = trelloClient;
-        filters = List.of(
-                filterByKnownType(),
-                filterByCardMember(),
-                filterBySubscribedLists()
-        );
     }
 
     public boolean shouldNotify(TrelloUpdate trelloUpdate, User user) {
-        return filters.stream()
-                .allMatch(filter -> filter.test(trelloUpdate, user));
+        TranslationKey actionType = trelloUpdate.getAction().getDisplay().getTranslationKey();
+        return switch (actionType) {
+            case ACTION_COMMENT_ON_CARD -> commentOnCard(trelloUpdate, user);
+            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> filterBySubscribedLists().test(trelloUpdate, user);
+            case UNKNOWN -> false;
+        };
     }
 
-    private BiPredicate<TrelloUpdate, User> filterByKnownType() {
-        return (update, user) -> update.getAction().getDisplay().getTranslationKey() != TranslationKey.UNKNOWN;
+    private boolean commentOnCard(TrelloUpdate trelloUpdate, User user) {
+        return Stream.of(filterByUserMention(),
+                         filterByCardMember())
+                .anyMatch(predicate -> predicate.test(trelloUpdate, user));
+    }
+
+    private BiPredicate<TrelloUpdate, User> filterByUserMention() {
+        return (update, user) -> {
+            String username = trelloClient.getMe(user.getToken(), user.getTokenSecret()).getUsername();
+            return update.getAction().getData().getText().contains("@" + username);
+        };
     }
 
     private BiPredicate<TrelloUpdate, User> filterByCardMember() {
@@ -43,11 +52,6 @@ public class NotificationFilter {
 
     private BiPredicate<TrelloUpdate, User> filterBySubscribedLists() {
         return (update, user) -> {
-            if (update.getAction().getDisplay()
-                        .getTranslationKey() != TranslationKey.ACTION_MOVE_CARD_FROM_LIST_TO_LIST) {
-                return true;
-            }
-
             String listId = update.getAction().getData().getListAfter().getId();
             return user.getBoardModels().stream()
                     .flatMap(boardModel -> boardModel.getListModels().stream())
