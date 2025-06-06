@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MemberCreator {
+    private String id;
     private String fullName;
 }
