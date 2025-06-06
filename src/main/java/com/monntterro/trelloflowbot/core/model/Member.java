@@ -8,4 +8,5 @@ import lombok.Data;
 public class Member {
     private String id;
     private String fullName;
+    private String username;
 }
