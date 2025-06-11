@@ -10,12 +10,16 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 - [Uses](.github/docs/USES.md)
 
 ## 🚀 Features
-
 - Receive notifications about Trello activity in Telegram
-- Subscribe to specific boards
-- Direct links to Trello boards and cards
-- Displays the name of the user who performed the action
+- Subscribe to specific lists in boards
+- Notifications are only for cardholders
+- But you will receive a notification if you are mentioned, even if you are not a cardholder.
+
+## 🎨 Appearance
+
+- Direct links to Trello organizations, boards and cards
 - ️ Well-formatted messages
+- Displays the name of the user who performed the action
 
 | Notification Type           | Status |
 |-----------------------------|--------|
@@ -26,8 +30,8 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 ## 🖥️ Quick start
 
 1. Grant access to your Trello account for the bot with OAuth
-2. Select the board(s) you want to receive updates for
-3. Receive notifications about changes on these boards
+2. Select the lists you want to receive updates for
+3. Receive notifications about changes on these lists
 
 ## 🧱 Stack
 

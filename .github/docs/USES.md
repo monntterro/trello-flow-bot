@@ -66,7 +66,7 @@ Copy it and use in the 6th step for the environmental variable `APP_URL`.
 Register your application with Trello
 by [this guide](https://telegra.ph/How-to-get-a-key-and-a-token-from-Trello-05-04).
 Make sure that you have set the `APP_URL` to `Allowed origins` field.
-And copy api key and secret to the 6th step for the
+And copy API key and secret to the 6th step for the
 variables `TRELLO_API_KEY` and `TRELLO_API_SECRET`.
 
 ### 6. 🏁 Start Application
