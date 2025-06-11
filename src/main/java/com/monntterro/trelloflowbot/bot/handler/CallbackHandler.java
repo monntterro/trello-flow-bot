@@ -1,7 +1,6 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
-import com.monntterro.trelloflowbot.bot.entity.BoardModel;
 import com.monntterro.trelloflowbot.bot.entity.ListModel;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.integration.TrelloAccountService;
@@ -14,6 +13,7 @@ import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
+import com.monntterro.trelloflowbot.core.model.Organization;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -48,8 +48,9 @@ public class CallbackHandler {
         CallbackData callbackData = CallbackData.from(jsonData);
         switch (callbackData.getCallbackType()) {
             case MENU -> menu(callbackQuery);
-            case MY_BOARDS -> getMyBoards(callbackQuery);
             case GET_BOARD -> getBoard(callbackQuery, callbackData.getData());
+            case MY_ORGANIZATIONS -> myOrganizations(callbackQuery);
+            case GET_BOARDS_BY_ORGANIZATION -> getBoardsByOrganization(callbackQuery, callbackData.getData());
             case SUBSCRIBE -> subscribeToList(callbackQuery, callbackData.getData());
             case UNSUBSCRIBE -> unsubscribeFromList(callbackQuery, callbackData.getData());
             case ACCOUNT_SETTINGS -> accountSettings(callbackQuery);
@@ -57,6 +58,82 @@ public class CallbackHandler {
             case LOGOUT_PREPARE -> logoutPrepare(callbackQuery);
             case SETTINGS -> setting(callbackQuery);
         }
+    }
+
+    private void getBoardsByOrganization(CallbackQuery callbackQuery, String data) {
+        String organizationName = JsonParser.read(data, "organizationName", String.class);
+        String organizationUrl = JsonParser.read(data, "organizationUrl", String.class);
+        String text = messageResource.getMessage("menu.chosen.organization", organizationName);
+        List<MessageEntity> messageEntities = List.of(TelegramMessage.textLink(organizationName, organizationUrl, 24));
+
+        User user = getUser(callbackQuery);
+        String organizationId = JsonParser.read(data, "organizationId", String.class);
+        List<InlineKeyboardRow> rows = trelloClientFacade.getBoardsByOrganization(organizationId, user).stream()
+                .map(board -> {
+                    String callbackData = JsonParser.create()
+                            .with("type", CallbackType.GET_BOARD)
+                            .with("boardId", board.getId())
+                            .with("boardName", board.getName())
+                            .with("boardUrl", board.getUrl())
+                            .with("organizationId", organizationId)
+                            .with("organizationName", organizationName)
+                            .with("organizationUrl", organizationUrl)
+                            .toJson();
+                    String callbackDataId = dataCache.put(callbackData);
+                    String buttonText = board.getName() + (board.isSubscribed() ? " ✅" : " ❌");
+                    return row(button(buttonText, callbackDataId));
+                })
+                .collect(Collectors.toList());
+
+        String menuCallbackData = JsonParser.create().with("type", CallbackType.MY_ORGANIZATIONS).toJson();
+        String menuCallbackDataId = dataCache.put(menuCallbackData);
+        rows.add(row(button(messageResource.getMessage("button.back"), menuCallbackDataId)));
+
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId, messageEntities, inlineKeyboard(rows));
+    }
+
+    private void myOrganizations(CallbackQuery callbackQuery) {
+        User user = getUser(callbackQuery);
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (user.getToken() == null || user.getToken().isBlank()) {
+            String text = messageResource.getMessage("user.not.registered");
+            long chatId = callbackQuery.getMessage().getChatId();
+            bot.editMessage(text, chatId, messageId);
+            return;
+        }
+
+        List<Organization> userOrganizations;
+        try {
+            userOrganizations = trelloClientFacade.getMyOrganizations(user);
+        } catch (AuthenticationException e) {
+            sendEditAuthenticationErrorMessage(user.getChatId(), messageId);
+            return;
+        }
+
+        List<InlineKeyboardRow> rows = userOrganizations.stream()
+                .map(organization -> {
+                    String callbackData = JsonParser.create()
+                            .with("type", CallbackType.GET_BOARDS_BY_ORGANIZATION)
+                            .with("organizationId", organization.getId())
+                            .with("organizationName", organization.getDisplayName())
+                            .with("organizationUrl", organization.getUrl())
+                            .toJson();
+                    String callbackDataId = dataCache.put(callbackData);
+                    String text = organization.getDisplayName();
+                    return row(button(text, callbackDataId));
+                })
+                .collect(Collectors.toList());
+
+        String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
+        String menuCallbackDataId = dataCache.put(menuCallbackData);
+        rows.add(row(button(messageResource.getMessage("button.back"), menuCallbackDataId)));
+
+        String text = messageResource.getMessage("menu.choose.organization");
+        long chatId = callbackQuery.getMessage().getChatId();
+        bot.editMessage(text, chatId, messageId, inlineKeyboard(rows));
     }
 
     private void logoutPrepare(CallbackQuery callbackQuery) {
@@ -119,14 +196,14 @@ public class CallbackHandler {
     }
 
     private void menu(CallbackQuery callbackQuery) {
-        String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
+        String myOrganizationsCallbackData = JsonParser.create().with("type", CallbackType.MY_ORGANIZATIONS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
 
-        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+        String myOrganizationsCallbackDataId = dataCache.put(myOrganizationsCallbackData);
         String settingsCallbackDataId = dataCache.put(settingsCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.my.organizations"), myOrganizationsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings"), settingsCallbackDataId))
         );
 
@@ -214,7 +291,15 @@ public class CallbackHandler {
             rows.add(row(button(buttonText, callbackDataId)));
         }
 
-        String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
+        String organizationId = JsonParser.read(data, "organizationId", String.class);
+        String organizationName = JsonParser.read(data, "organizationName", String.class);
+        String organizationUrl = JsonParser.read(data, "organizationUrl", String.class);
+        String myBoardsCallbackData = JsonParser.create()
+                .with("type", CallbackType.GET_BOARDS_BY_ORGANIZATION)
+                .with("organizationId", organizationId)
+                .with("organizationName", organizationName)
+                .with("organizationUrl", organizationUrl)
+                .toJson();
         String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
         rows.add(row(button(messageResource.getMessage("button.back"), myBoardsCallbackDataId)));
 
@@ -222,47 +307,6 @@ public class CallbackHandler {
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
         bot.editMessage(text, chatId, messageId, messageEntities, markup);
-    }
-
-    private void getMyBoards(CallbackQuery callbackQuery) {
-        User user = getUser(callbackQuery);
-        int messageId = callbackQuery.getMessage().getMessageId();
-
-        if (user.getToken() == null || user.getToken().isBlank()) {
-            String text = messageResource.getMessage("user.not.registered");
-            long chatId = callbackQuery.getMessage().getChatId();
-            bot.editMessage(text, chatId, messageId);
-            return;
-        }
-
-        List<BoardModel> userBoards;
-        try {
-            userBoards = trelloClientFacade.getMyBoards(user);
-        } catch (AuthenticationException e) {
-            sendEditAuthenticationErrorMessage(user.getChatId(), messageId);
-            return;
-        }
-        List<InlineKeyboardRow> rows = userBoards.stream()
-                .map(board -> {
-                    String callbackData = JsonParser.create()
-                            .with("type", CallbackType.GET_BOARD)
-                            .with("boardId", board.getId())
-                            .with("boardName", board.getName())
-                            .with("boardUrl", board.getUrl())
-                            .toJson();
-                    String callbackDataId = dataCache.put(callbackData);
-                    String text = board.getName() + (board.isSubscribed() ? " ✅" : " ❌");
-                    return row(button(text, callbackDataId));
-                })
-                .collect(Collectors.toList());
-
-        String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
-        String menuCallbackDataId = dataCache.put(menuCallbackData);
-        rows.add(row(button(messageResource.getMessage("button.back"), menuCallbackDataId)));
-
-        String text = messageResource.getMessage("menu.choose.board");
-        long chatId = callbackQuery.getMessage().getChatId();
-        bot.editMessage(text, chatId, messageId, inlineKeyboard(rows));
     }
 
     private void sendEditAuthenticationErrorMessage(long chatId, int messageId) {

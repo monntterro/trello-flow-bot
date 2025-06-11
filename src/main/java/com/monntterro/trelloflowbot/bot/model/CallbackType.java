@@ -9,5 +9,6 @@ public enum CallbackType {
     ACCOUNT_SETTINGS,
     LOGOUT,
     LOGOUT_PREPARE,
-    MY_BOARDS
+    MY_ORGANIZATIONS,
+    GET_BOARDS_BY_ORGANIZATION
 }
