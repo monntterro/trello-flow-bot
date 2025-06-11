@@ -35,18 +35,20 @@ public class CommandHandler {
     }
 
     private void menuCommand(Message message) {
-        String text = messageResource.getMessage("menu.text");
-        String myBoardsCallbackData = JsonParser.create().with("type", CallbackType.MY_BOARDS).toJson();
+        String myOrganizationsCallbackData = JsonParser.create().with("type", CallbackType.MY_ORGANIZATIONS).toJson();
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
 
-        String myBoardsCallbackDataId = dataCache.put(myBoardsCallbackData);
+        String myOrganizationsCallbackDataId = dataCache.put(myOrganizationsCallbackData);
         String settingsCallbackDataId = dataCache.put(settingsCallbackData);
+
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.my.boards"), myBoardsCallbackDataId)),
+                row(button(messageResource.getMessage("menu.my.organizations"), myOrganizationsCallbackDataId)),
                 row(button(messageResource.getMessage("menu.settings"), settingsCallbackDataId))
         );
 
-        bot.sendMessage(text, message.getChatId(), markup);
+        String text = messageResource.getMessage("menu.text");
+        long chatId = message.getChatId();
+        bot.sendMessage(text, chatId, markup);
     }
 
     private void startCommand(Message message) {
