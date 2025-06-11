@@ -10,6 +10,7 @@ import com.monntterro.trelloflowbot.bot.service.ListModelService;
 import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
 import com.monntterro.trelloflowbot.core.model.Board;
+import com.monntterro.trelloflowbot.core.model.Organization;
 import com.monntterro.trelloflowbot.core.model.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,8 +82,12 @@ public class TrelloClientFacade {
         return listModelService.saveAllOrUpdate(listModels, boardModel);
     }
 
-    public List<BoardModel> getMyBoards(User user) throws AuthenticationException {
-        List<Board> boards = trelloClient.getMyBoards(user.getToken(), user.getTokenSecret());
+    public List<Organization> getMyOrganizations(User user) {
+        return trelloClient.getUserOrganizations(user.getToken(), user.getTokenSecret());
+    }
+
+    public List<BoardModel> getBoardsByOrganization(String organizationId, User user) {
+        List<Board> boards = trelloClient.getBoardsByOrganization(organizationId, user.getToken(), user.getTokenSecret());
         List<BoardModel> boardModels = boards.stream()
                 .map(board -> BoardModel.builder()
                         .modelId(board.getId())

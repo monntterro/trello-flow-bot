@@ -9,10 +9,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.monntterro.trelloflowbot.core.exception.AuthenticationException;
-import com.monntterro.trelloflowbot.core.model.Board;
-import com.monntterro.trelloflowbot.core.model.Card;
-import com.monntterro.trelloflowbot.core.model.Member;
-import com.monntterro.trelloflowbot.core.model.Webhook;
+import com.monntterro.trelloflowbot.core.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,13 +30,6 @@ public class TrelloClient {
 
     @Value("${trello.webhook.path}")
     private String webhookPath;
-
-    public List<Board> getMyBoards(String accessToken, String accessSecret) {
-        OAuthRequest request = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me/boards");
-        String json = executeSignedRequest(request, accessToken, accessSecret);
-
-        return convert(json, new TypeReference<List<Board>>() {});
-    }
 
     public Webhook createWebhook(String modelId, String webhookPath, String accessToken, String accessSecret) {
         String callbackUrl = buildCallbackUrl(webhookPath);
@@ -80,6 +70,20 @@ public class TrelloClient {
         String json = executeSignedRequest(getListsRequest, token, tokenSecret);
 
         return convert(json, new TypeReference<List<com.monntterro.trelloflowbot.core.model.List>>() {});
+    }
+
+    public List<Organization> getUserOrganizations(String token, String tokenSecret) {
+        OAuthRequest getOrganizationsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me/organizations");
+        String json = executeSignedRequest(getOrganizationsRequest, token, tokenSecret);
+
+        return convert(json, new TypeReference<List<Organization>>() {});
+    }
+
+    public List<Board> getBoardsByOrganization(String organizationId, String token, String tokenSecret) {
+        OAuthRequest getBoardsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/organizations/" + organizationId + "/boards");
+        String json = executeSignedRequest(getBoardsRequest, token, tokenSecret);
+
+        return convert(json, new TypeReference<List<Board>>() {});
     }
 
     private String executeSignedRequest(OAuthRequest request, String accessToken, String accessSecret) {
