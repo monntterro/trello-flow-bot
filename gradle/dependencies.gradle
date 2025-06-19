@@ -1,7 +1,5 @@
 ext {
     versions = [
-            springBoot                : '3.4.4',
-            springDependencyManagement: '1.1.7',
             springWeb                 : '3.4.1',
             springDataJpa             : '3.3.4',
             springSecurityCrypto      : '6.2.2',
