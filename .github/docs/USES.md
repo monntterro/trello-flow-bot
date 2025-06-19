@@ -120,7 +120,7 @@ Start application:
 ### Utility Libraries
 
 - Lombok: `1.18.36`
-- Scrive: `8.3.3`
+- Scribe: `8.3.3`
 
 ### Testing
 
