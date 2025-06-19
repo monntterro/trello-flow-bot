@@ -274,6 +274,10 @@ public class CallbackHandler {
         String text = messageResource.getMessage("menu.chosen.board", boardName);
         List<MessageEntity> messageEntities = List.of(TelegramMessage.textLink(boardName, boardUrl, 18));
 
+        String organizationId = JsonParser.read(data, "organizationId", String.class);
+        String organizationName = JsonParser.read(data, "organizationName", String.class);
+        String organizationUrl = JsonParser.read(data, "organizationUrl", String.class);
+
         User user = getUser(callbackQuery);
         Long boardId = JsonParser.read(data, "boardId", Long.class);
         List<ListModel> lists = trelloClientFacade.getListsForBoard(boardId, user);
@@ -286,14 +290,14 @@ public class CallbackHandler {
                     .with("boardName", boardName)
                     .with("boardUrl", boardUrl)
                     .with("listId", list.getId())
+                    .with("organizationId", organizationId)
+                    .with("organizationName", organizationName)
+                    .with("organizationUrl", organizationUrl)
                     .toJson();
             String callbackDataId = dataCache.put(callbackData);
             rows.add(row(button(buttonText, callbackDataId)));
         }
 
-        String organizationId = JsonParser.read(data, "organizationId", String.class);
-        String organizationName = JsonParser.read(data, "organizationName", String.class);
-        String organizationUrl = JsonParser.read(data, "organizationUrl", String.class);
         String myBoardsCallbackData = JsonParser.create()
                 .with("type", CallbackType.GET_BOARDS_BY_ORGANIZATION)
                 .with("organizationId", organizationId)
