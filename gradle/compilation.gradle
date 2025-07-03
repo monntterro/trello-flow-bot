@@ -1,0 +1,24 @@
+ext {
+    encoding = 'UTF-8'
+}
+
+bootJar {
+    enabled = true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    enabled = false
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = encoding
+    options.debug = true
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
