@@ -42,9 +42,13 @@ trello:
     path: /oauth/callback
 telegram:
   callback:
-    expiration: 1m
+    expiration-minutes: ${BOT_CALLBACK_EXPIRATION_MINUTES}
     cleanup:
       interval.secs: 30
   bot:
     path: bot
     token: ${BOT_TOKEN}
+reminders:
+  remind-after-minutes: ${TRELLO_UPDATE_REMIND_AFTER_MINUTES}
+  scheduler:
+    check-and-send-rate-ms: 10_000
