@@ -1,11 +1,9 @@
 # Uses
-
 To use Trello webhooks, you will need a static IP address. Alternatively, you can use a tunneling service such
 as [ngrok](https://ngrok.com) _(not appropriate for production)_.
 
 
 ## 📦 Prerequisites
-
 Before running the application, ensure the following are installed on your system:
 - Java 17+
 - Gradle
@@ -20,9 +18,7 @@ Before running the application, ensure the following are installed on your syste
   git clone https://github.com/monntterro/trello-flow-bot.git
 ```
 
-
 ### 2. 🎯 Register Telegram Bot
-
 Register your bot with [@BotFather](https://t.me/botfather) and obtain the token. Set the token in the 5th step for the
 variable `BOT_TOKEN`.
 

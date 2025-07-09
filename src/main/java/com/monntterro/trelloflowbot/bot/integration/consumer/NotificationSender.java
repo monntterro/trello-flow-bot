@@ -1,6 +1,6 @@
 package com.monntterro.trelloflowbot.bot.integration.consumer;
 
-import com.monntterro.trelloflowbot.bot.entity.user.User;
+import com.monntterro.trelloflowbot.bot.entity.Reminder;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 public class NotificationSender {
     private final TelegramBot bot;
 
-    public void send(TrelloUpdate trelloUpdate, User user) {
+    public void send(Reminder reminder) {
         TelegramMessage message = TelegramMessage.create();
+        TrelloUpdate trelloUpdate = reminder.getTrelloUpdate();
         appendHeader(message, trelloUpdate);
         appendUserInfo(message, trelloUpdate);
         appendAction(message, trelloUpdate);
 
-        bot.sendMessage(message.getText(), user.getChatId(), message.getEntities());
+        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities());
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {

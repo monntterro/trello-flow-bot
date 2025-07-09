@@ -4,7 +4,6 @@
 and other events. It helps teams stay updated on board changes directly in Telegram.
 
 ## 📚 Overview
-
 - [Quick start](#-quick-start)
 - [Features](#-features)
 - [Uses](.github/docs/USES.md)
@@ -13,7 +12,9 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 - Receive notifications about Trello activity in Telegram
 - Subscribe to specific lists in boards
 - Notifications are only for cardholders
-- But you will receive a notification if you are mentioned, even if you are not a cardholder.
+- But you will receive a notification if you are mentioned, even if you are not a cardholder
+- Reminder system: If you missed or did not notice the update notification, do not worry, the bot will kindly remind you
+  again
 
 ## 🎨 Appearance
 - Direct links to Trello organizations, boards and cards
@@ -24,6 +25,7 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 |-----------------------------|--------|
 | Card movement between lists | ✅      |
 | New comments on cards       | ✅      |
+| Mention from another card   | ✅      |
 | Card creation               | ❌      |
 
 ## 🖥️ Quick start

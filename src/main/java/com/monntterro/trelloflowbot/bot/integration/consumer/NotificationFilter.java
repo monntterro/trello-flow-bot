@@ -5,20 +5,16 @@ import com.monntterro.trelloflowbot.core.client.TrelloClient;
 import com.monntterro.trelloflowbot.core.model.Card;
 import com.monntterro.trelloflowbot.core.model.TranslationKey;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationFilter {
     private final TrelloClient trelloClient;
-
-    @Autowired
-    public NotificationFilter(TrelloClient trelloClient) {
-        this.trelloClient = trelloClient;
-    }
 
     public boolean shouldNotify(TrelloUpdate trelloUpdate, User user) {
         TranslationKey actionType = trelloUpdate.getAction().getDisplay().getTranslationKey();

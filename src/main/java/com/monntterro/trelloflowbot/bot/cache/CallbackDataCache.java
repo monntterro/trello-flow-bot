@@ -1,11 +1,9 @@
 package com.monntterro.trelloflowbot.bot.cache;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,12 +37,11 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Component
-@Scope("singleton")
 public class CallbackDataCache {
     private final ConcurrentHashMap<String, CacheData> cache = new ConcurrentHashMap<>();
 
-    @Value("${telegram.callback.expiration}")
-    private Duration expiration;
+    @Value("${telegram.callback.expiration-minutes}")
+    private Long expirationMinutes;
 
     public boolean contains(String key) {
         return cache.containsKey(key);
@@ -65,7 +62,7 @@ public class CallbackDataCache {
     private void cleanUp() {
         LocalDateTime now = LocalDateTime.now();
         cache.entrySet().removeIf(
-                entry -> entry.getValue().getCreatedAt().plusSeconds(expiration.getSeconds()).isBefore(now)
+                entry -> entry.getValue().getCreatedAt().plusMinutes(expirationMinutes).isBefore(now)
         );
     }
 }
