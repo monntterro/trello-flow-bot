@@ -30,6 +30,6 @@ public class Reminder {
     @Column(name = "next_reminder_time")
     public Instant nextReminderTime;
 
-    @Column(name = "processed")
-    private boolean processed;
+    @Column(name = "seen")
+    private boolean seen;
 }

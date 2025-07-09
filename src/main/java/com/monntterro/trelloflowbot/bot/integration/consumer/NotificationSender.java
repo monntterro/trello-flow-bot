@@ -1,17 +1,24 @@
 package com.monntterro.trelloflowbot.bot.integration.consumer;
 
+import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.Reminder;
+import com.monntterro.trelloflowbot.bot.model.CallbackType;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
+import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
 import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+
+import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationSender {
     private final TelegramBot bot;
+    private final CallbackDataCache dataCache;
 
     public void send(Reminder reminder) {
         TelegramMessage message = TelegramMessage.create();
@@ -20,7 +27,7 @@ public class NotificationSender {
         appendUserInfo(message, trelloUpdate);
         appendAction(message, trelloUpdate);
 
-        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities());
+        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities(), seenButton(reminder));
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {
@@ -60,5 +67,14 @@ public class NotificationSender {
                 .append(":\n\n")
                 .italic("“" + data.getText() + "”")
                 .append("\n\n");
+    }
+
+    private InlineKeyboardMarkup seenButton(Reminder reminder) {
+        String callbackData = JsonParser.create()
+                .with("type", CallbackType.REMINDER_SEEN)
+                .with("reminderId", reminder.getId())
+                .toJson();
+        String callbackDataId = dataCache.put(callbackData);
+        return inlineKeyboard(row(button("Отметить как прочитанное ✅", callbackDataId)));
     }
 }

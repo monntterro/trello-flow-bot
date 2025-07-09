@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS reminders
     trello_update      TEXT                        NOT NULL,
     user_chat_id       BIGINT                      NOT NULL,
     next_reminder_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    processed          BOOLEAN                     NOT NULL DEFAULT FALSE
+    seen BOOLEAN NOT NULL DEFAULT FALSE
 );

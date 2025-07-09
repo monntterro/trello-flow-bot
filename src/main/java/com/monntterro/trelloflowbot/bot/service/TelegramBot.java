@@ -105,14 +105,14 @@ public class TelegramBot extends SpringTelegramWebhookBot {
         }
     }
 
-    public void editMessage(String text, long chatId, int messageId, List<MessageEntity> messageEntities,
+    public void editMessage(String text, long chatId, int messageId, List<MessageEntity> entities,
                             InlineKeyboardMarkup markup) {
         EditMessageText sendMessage = EditMessageText.builder()
                 .text(text)
                 .chatId(chatId)
                 .messageId(messageId)
                 .replyMarkup(markup)
-                .entities(messageEntities)
+                .entities(entities)
                 .build();
         try {
             telegramClient.execute(sendMessage);
@@ -121,11 +121,12 @@ public class TelegramBot extends SpringTelegramWebhookBot {
         }
     }
 
-    public void sendMessage(String text, long chatId, List<MessageEntity> entities) {
+    public void sendMessage(String text, Long userChatId, List<MessageEntity> entities, InlineKeyboardMarkup markup) {
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
-                .chatId(chatId)
+                .chatId(userChatId)
                 .entities(entities)
+                .replyMarkup(markup)
                 .build();
         try {
             telegramClient.execute(sendMessage);

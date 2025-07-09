@@ -7,5 +7,5 @@ import java.time.Instant;
 import java.util.List;
 
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
-    List<Reminder> findAllByProcessedAndNextReminderTimeBefore(boolean processed, Instant instant);
+    List<Reminder> findAllBySeenAndNextReminderTimeBefore(boolean seen, Instant instant);
 }
