@@ -2,11 +2,13 @@ package com.monntterro.trelloflowbot.bot.handler;
 
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.ListModel;
+import com.monntterro.trelloflowbot.bot.entity.Reminder;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.integration.TrelloAccountService;
 import com.monntterro.trelloflowbot.bot.integration.TrelloClientFacade;
 import com.monntterro.trelloflowbot.bot.model.CallbackData;
 import com.monntterro.trelloflowbot.bot.model.CallbackType;
+import com.monntterro.trelloflowbot.bot.service.ReminderService;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
@@ -36,6 +39,7 @@ public class CallbackHandler {
     private final TrelloClientFacade trelloClientFacade;
     private final MessageResource messageResource;
     private final TrelloAccountService accountService;
+    private final ReminderService reminderService;
 
     public void handle(CallbackQuery callbackQuery) {
         String callbackQueryData = callbackQuery.getData();
@@ -57,6 +61,7 @@ public class CallbackHandler {
             case LOGOUT -> logout(callbackQuery);
             case LOGOUT_PREPARE -> logoutPrepare(callbackQuery);
             case SETTINGS -> setting(callbackQuery);
+            case REMINDER_SEEN -> reminderSeen(callbackQuery, callbackData.getData());
         }
     }
 
@@ -322,5 +327,18 @@ public class CallbackHandler {
         long telegramId = callbackQuery.getFrom().getId();
         return userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
+    }
+
+    private void reminderSeen(CallbackQuery callbackQuery, String data) {
+        Long reminderId = JsonParser.read(data, "reminderId", Long.class);
+        Reminder reminder = reminderService.findById(reminderId).orElseThrow();
+        reminder.setSeen(true);
+        reminderService.save(reminder);
+
+        String messageText = ((Message) callbackQuery.getMessage()).getText();
+        String text = messageText + "\n\n" + messageResource.getMessage("reminder.seen");
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,17 +19,25 @@ public class ReminderService {
         Reminder reminder = Reminder.builder()
                 .trelloUpdate(trelloUpdate)
                 .userChatId(userChatId)
-                .processed(false)
+                .seen(false)
                 .nextReminderTime(Instant.now())
                 .build();
         reminderRepository.save(reminder);
     }
 
     public List<Reminder> findAllReadyToSend() {
-        return reminderRepository.findAllByProcessedAndNextReminderTimeBefore(false, Instant.now());
+        return reminderRepository.findAllBySeenAndNextReminderTimeBefore(false, Instant.now());
     }
 
     public void saveAll(List<Reminder> reminders) {
         reminderRepository.saveAll(reminders);
+    }
+
+    public Optional<Reminder> findById(Long id) {
+        return reminderRepository.findById(id);
+    }
+
+    public void save(Reminder reminder) {
+        reminderRepository.save(reminder);
     }
 }
