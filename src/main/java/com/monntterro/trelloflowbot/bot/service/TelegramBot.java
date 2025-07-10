@@ -134,4 +134,19 @@ public class TelegramBot extends SpringTelegramWebhookBot {
             log.error(e.getMessage());
         }
     }
+
+    public void editMessage(String text, long chatId, int messageId, List<MessageEntity> entities) {
+        EditMessageText sendMessage = EditMessageText.builder()
+                .text(text)
+                .chatId(chatId)
+                .messageId(messageId)
+                .replyMarkup(null)
+                .entities(entities)
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
 }

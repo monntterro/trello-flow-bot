@@ -40,4 +40,11 @@ public class ReminderService {
     public void save(Reminder reminder) {
         reminderRepository.save(reminder);
     }
+
+    public void postpone(Long reminderId, long postponeMinutes) {
+        Reminder reminder = reminderRepository.findById(reminderId).orElseThrow();
+        Instant now = Instant.now();
+        reminder.setNextReminderTime(now.plusSeconds(postponeMinutes * 60));
+        reminderRepository.save(reminder);
+    }
 }

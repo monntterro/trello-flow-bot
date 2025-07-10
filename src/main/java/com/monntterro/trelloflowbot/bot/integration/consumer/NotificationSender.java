@@ -27,7 +27,7 @@ public class NotificationSender {
         appendUserInfo(message, trelloUpdate);
         appendAction(message, trelloUpdate);
 
-        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities(), seenButton(reminder));
+        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities(), buttons(reminder));
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {
@@ -69,12 +69,57 @@ public class NotificationSender {
                 .append("\n\n");
     }
 
-    private InlineKeyboardMarkup seenButton(Reminder reminder) {
-        String callbackData = JsonParser.create()
+    private InlineKeyboardMarkup buttons(Reminder reminder) {
+        String reminderSeenCallbackData = JsonParser.create()
                 .with("type", CallbackType.REMINDER_SEEN)
                 .with("reminderId", reminder.getId())
                 .toJson();
-        String callbackDataId = dataCache.put(callbackData);
-        return inlineKeyboard(row(button("Отметить как прочитанное ✅", callbackDataId)));
+        String postpone10minutesCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 10)
+                .toJson();
+        String postpone30minutesCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 30)
+                .toJson();
+        String postpone1hourCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 60)
+                .toJson();
+        String postpone3hoursCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 180)
+                .toJson();
+        String postpone6hoursCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 360)
+                .toJson();
+        String postpone12hoursCallbackData = JsonParser.create()
+                .with("type", CallbackType.POSTPONE_REMINDER)
+                .with("reminderId", reminder.getId())
+                .with("postponeMinutes", 720)
+                .toJson();
+
+        String reminderSeenCallbackDataId = dataCache.put(reminderSeenCallbackData);
+        String postpone10minutesCallbackDataId = dataCache.put(postpone10minutesCallbackData);
+        String postpone30minutesCallbackDataId = dataCache.put(postpone30minutesCallbackData);
+        String postpone1hourCallbackDataId = dataCache.put(postpone1hourCallbackData);
+        String postpone3hoursCallbackDataId = dataCache.put(postpone3hoursCallbackData);
+        String postpone6hoursCallbackDataId = dataCache.put(postpone6hoursCallbackData);
+        String postpone12hoursCallbackDataId = dataCache.put(postpone12hoursCallbackData);
+        return inlineKeyboard(
+                row(button("10 мин", postpone10minutesCallbackDataId),
+                    button("30 мин", postpone30minutesCallbackDataId),
+                    button("1 ч", postpone1hourCallbackDataId)),
+                row(button("3 ч", postpone3hoursCallbackDataId),
+                    button("6 ч", postpone6hoursCallbackDataId),
+                    button("12 ч", postpone12hoursCallbackDataId)),
+                row(button("Отметить как прочитанное ✅", reminderSeenCallbackDataId))
+        );
     }
 }
