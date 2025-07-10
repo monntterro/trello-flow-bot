@@ -32,4 +32,7 @@ public class Reminder {
 
     @Column(name = "seen")
     private boolean seen;
+
+    @Column(name = "prev_reminder_message_id")
+    private Integer prevReminderMessageId;
 }

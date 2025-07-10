@@ -10,7 +10,10 @@ import com.monntterro.trelloflowbot.core.model.Data;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+
+import java.util.Optional;
 
 import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
 
@@ -20,14 +23,14 @@ public class NotificationSender {
     private final TelegramBot bot;
     private final CallbackDataCache dataCache;
 
-    public void send(Reminder reminder) {
+    public Optional<Message> send(Reminder reminder) {
         TelegramMessage message = TelegramMessage.create();
         TrelloUpdate trelloUpdate = reminder.getTrelloUpdate();
         appendHeader(message, trelloUpdate);
         appendUserInfo(message, trelloUpdate);
         appendAction(message, trelloUpdate);
 
-        bot.sendMessage(message.getText(), reminder.getUserChatId(), message.getEntities(), buttons(reminder));
+        return bot.sendMessageAndGetResult(message.getText(), reminder.getUserChatId(), message.getEntities(), buttons(reminder));
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {

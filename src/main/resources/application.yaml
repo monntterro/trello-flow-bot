@@ -51,4 +51,4 @@ telegram:
 reminders:
   remind-after-minutes: ${TRELLO_UPDATE_REMIND_AFTER_MINUTES}
   scheduler:
-    check-and-send-rate-ms: 10_000
+    check-and-send-rate-ms: 5_000
