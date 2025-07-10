@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -20,6 +22,7 @@ import org.telegram.telegrambots.webhook.starter.SpringTelegramWebhookBot;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -52,7 +55,7 @@ public class TelegramBot extends SpringTelegramWebhookBot {
         }
     }
 
-    public void sendMessage(String text, Long chatId) {
+    public void sendMessage(String text, long chatId) {
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
                 .chatId(chatId)
@@ -121,18 +124,20 @@ public class TelegramBot extends SpringTelegramWebhookBot {
         }
     }
 
-    public void sendMessage(String text, Long userChatId, List<MessageEntity> entities, InlineKeyboardMarkup markup) {
+    public Optional<Message> sendMessageAndGetResult(String text, long chatId, List<MessageEntity> entities,
+                                                     InlineKeyboardMarkup markup) {
         SendMessage sendMessage = SendMessage.builder()
                 .text(text)
-                .chatId(userChatId)
+                .chatId(chatId)
                 .entities(entities)
                 .replyMarkup(markup)
                 .build();
         try {
-            telegramClient.execute(sendMessage);
+            return Optional.ofNullable(telegramClient.execute(sendMessage));
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
+        return Optional.empty();
     }
 
     public void editMessage(String text, long chatId, int messageId, List<MessageEntity> entities) {
@@ -147,6 +152,18 @@ public class TelegramBot extends SpringTelegramWebhookBot {
             telegramClient.execute(sendMessage);
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
+        }
+    }
+
+    public void deleteMessage(long chatId, int messageId) {
+        DeleteMessage deleteMessage = DeleteMessage.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .build();
+        try {
+            telegramClient.execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            log.error("Failed to delete message: {}", e.getMessage());
         }
     }
 }

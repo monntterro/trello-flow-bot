@@ -13,8 +13,8 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 - Subscribe to specific lists in boards
 - Notifications are only for cardholders
 - But you will receive a notification if you are mentioned, even if you are not a cardholder
-- Reminder system: If you missed or did not notice the update notification, do not worry, the bot will kindly remind you
-  again
+- If you missed or did not notice the update notification, do not worry, the bot will kindly remind you again
+- But if you're busy, you can always postpone the reminder for another time
 
 ## 🎨 Appearance
 - Direct links to Trello organizations, boards and cards
