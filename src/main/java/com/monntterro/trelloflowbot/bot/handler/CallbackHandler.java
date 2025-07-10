@@ -62,6 +62,7 @@ public class CallbackHandler {
             case LOGOUT_PREPARE -> logoutPrepare(callbackQuery);
             case SETTINGS -> setting(callbackQuery);
             case REMINDER_SEEN -> reminderSeen(callbackQuery, callbackData.getData());
+            case POSTPONE_REMINDER -> postponeReminder(callbackQuery, callbackData.getData());
         }
     }
 
@@ -335,10 +336,29 @@ public class CallbackHandler {
         reminder.setSeen(true);
         reminderService.save(reminder);
 
-        String messageText = ((Message) callbackQuery.getMessage()).getText();
+        Message message = (Message) callbackQuery.getMessage();
+        String messageText = message.getText();
         String text = messageText + "\n\n" + messageResource.getMessage("reminder.seen");
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
-        bot.editMessage(text, chatId, messageId);
+        bot.editMessage(text, chatId, messageId, message.getEntities());
+    }
+
+    private void postponeReminder(CallbackQuery callbackQuery, String data) {
+        long reminderId = JsonParser.read(data, "reminderId", Long.class);
+        long postponeMinutes = JsonParser.read(data, "postponeMinutes", Long.class);
+        reminderService.postpone(reminderId, postponeMinutes);
+
+        Message message = (Message) callbackQuery.getMessage();
+        String text = message.getText() + "\n\n";
+        if (postponeMinutes >= 60) {
+            text += messageResource.getMessage("reminder.postpone", postponeMinutes / 60, "ч");
+        } else {
+            text += messageResource.getMessage("reminder.postpone", postponeMinutes, "мин");
+        }
+
+        int messageId = callbackQuery.getMessage().getMessageId();
+        long chatId = callbackQuery.getMessage().getChatId();
+        bot.editMessage(text, chatId, messageId, message.getEntities());
     }
 }
