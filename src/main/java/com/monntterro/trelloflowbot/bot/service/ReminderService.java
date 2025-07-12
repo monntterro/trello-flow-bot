@@ -47,4 +47,8 @@ public class ReminderService {
         reminder.setNextReminderTime(now.plusSeconds(postponeMinutes * 60));
         reminderRepository.save(reminder);
     }
+
+    public void deleteAllByUserChatId(Long chatId) {
+        reminderRepository.deleteAllByUserChatId(chatId);
+    }
 }

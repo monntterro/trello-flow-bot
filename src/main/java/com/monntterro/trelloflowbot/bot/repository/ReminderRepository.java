@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     List<Reminder> findAllBySeenAndNextReminderTimeBefore(boolean seen, Instant instant);
+
+    void deleteAllByUserChatId(Long userChatId);
 }
