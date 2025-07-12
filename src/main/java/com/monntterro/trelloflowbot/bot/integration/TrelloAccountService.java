@@ -5,6 +5,7 @@ import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
 import com.monntterro.trelloflowbot.bot.repository.BoardModelRepository;
 import com.monntterro.trelloflowbot.bot.repository.TrelloWebhookRepository;
+import com.monntterro.trelloflowbot.bot.service.ReminderService;
 import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.core.service.OAuthService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class TrelloAccountService {
     private final TrelloClientFacade trelloClientFacade;
     private final BoardModelRepository boardModelRepository;
     private final TrelloWebhookRepository trelloWebhookRepository;
+    private final ReminderService reminderService;
 
     public String getLoginUrl(long userTelegramId) throws IOException, ExecutionException, InterruptedException {
         OAuth1RequestToken requestToken = oAuthService.getRequestToken();
@@ -51,6 +53,7 @@ public class TrelloAccountService {
 
         trelloWebhookRepository.deleteAll(user.getTrelloWebhooks());
         boardModelRepository.deleteAll(user.getBoardModels());
+        reminderService.deleteAllByUserChatId(user.getChatId());
 
         userService.save(user);
     }
