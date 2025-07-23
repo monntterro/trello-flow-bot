@@ -19,9 +19,9 @@ public class NotificationFilter {
     public boolean shouldNotify(TrelloUpdate trelloUpdate, User user) {
         TranslationKey actionType = trelloUpdate.getAction().getDisplay().getTranslationKey();
 
-        if (ownMemberAction(trelloUpdate, user)) {
-            return false;
-        }
+        // if (ownMemberAction(trelloUpdate, user)) {
+        //     return false;
+        // }
 
         return switch (actionType) {
             case ACTION_COMMENT_ON_CARD -> commentOnCard(trelloUpdate, user);

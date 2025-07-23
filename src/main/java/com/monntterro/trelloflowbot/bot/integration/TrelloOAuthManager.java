@@ -20,16 +20,16 @@ public class TrelloOAuthManager implements OAuthManager {
     private final TelegramBot bot;
     private final MessageResource messageResource;
     private final TrelloClient trelloClient;
-    private final TrelloAccountService trelloAccountService;
+    private final TrelloOAuthSecretStorage oAuthSecretStorage;
 
     @Override
     public void successAuth(OAuth1AccessToken accessToken, String token) {
         long userTelegramId = secretStorage.getKeyByToken(token);
-        trelloAccountService.removeAccount(userTelegramId);
-
-        Member me = trelloClient.getMe(accessToken.getToken(), accessToken.getTokenSecret());
         User user = userService.findByTelegramId(userTelegramId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+        oAuthSecretStorage.removeByToken(userTelegramId);
+
+        Member me = trelloClient.getMe(accessToken.getToken(), accessToken.getTokenSecret());
         user.setTrelloMemberId(me.getId());
         user.setToken(accessToken.getToken());
         user.setTokenSecret(accessToken.getTokenSecret());
