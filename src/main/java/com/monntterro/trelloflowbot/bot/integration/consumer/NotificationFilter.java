@@ -25,14 +25,18 @@ public class NotificationFilter {
 
         return switch (actionType) {
             case ACTION_COMMENT_ON_CARD -> commentOnCard(trelloUpdate, user);
-            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> filterBySubscribedLists().test(trelloUpdate, user);
+            case ACTION_MOVE_CARD_FROM_LIST_TO_LIST -> moveCardFromListToList(trelloUpdate, user);
             case UNKNOWN -> false;
         };
     }
 
+    private boolean moveCardFromListToList(TrelloUpdate trelloUpdate, User user) {
+        return subscribedListsFilter().test(trelloUpdate, user) || cardMemberFilter().test(trelloUpdate, user);
+    }
+
     private boolean commentOnCard(TrelloUpdate trelloUpdate, User user) {
-        return Stream.of(filterByUserMention(),
-                         filterByCardMember())
+        return Stream.of(userMentionFilter(),
+                         cardMemberFilter())
                 .anyMatch(predicate -> predicate.test(trelloUpdate, user));
     }
 
@@ -40,14 +44,14 @@ public class NotificationFilter {
         return trelloUpdate.getAction().getMemberCreator().getId().equals(user.getTrelloMemberId());
     }
 
-    private BiPredicate<TrelloUpdate, User> filterByUserMention() {
+    private BiPredicate<TrelloUpdate, User> userMentionFilter() {
         return (update, user) -> {
             String username = trelloClient.getMe(user.getToken(), user.getTokenSecret()).getUsername();
             return update.getAction().getData().getText().contains("@" + username);
         };
     }
 
-    private BiPredicate<TrelloUpdate, User> filterByCardMember() {
+    private BiPredicate<TrelloUpdate, User> cardMemberFilter() {
         return (update, user) -> {
             String cardId = update.getAction().getData().getCard().getId();
             Card card = trelloClient.getCard(cardId, user.getToken(), user.getTokenSecret());
@@ -55,7 +59,7 @@ public class NotificationFilter {
         };
     }
 
-    private BiPredicate<TrelloUpdate, User> filterBySubscribedLists() {
+    private BiPredicate<TrelloUpdate, User> subscribedListsFilter() {
         return (update, user) -> {
             String listId = update.getAction().getData().getListAfter().getId();
             return user.getBoardModels().stream()
