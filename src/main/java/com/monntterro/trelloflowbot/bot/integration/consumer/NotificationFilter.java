@@ -31,7 +31,7 @@ public class NotificationFilter {
     }
 
     private boolean moveCardFromListToList(TrelloUpdate trelloUpdate, User user) {
-        return subscribedListsFilter().test(trelloUpdate, user) || cardMemberFilter().test(trelloUpdate, user);
+        return subscribedListsFilter().test(trelloUpdate, user) && cardMemberFilter().test(trelloUpdate, user);
     }
 
     private boolean commentOnCard(TrelloUpdate trelloUpdate, User user) {
