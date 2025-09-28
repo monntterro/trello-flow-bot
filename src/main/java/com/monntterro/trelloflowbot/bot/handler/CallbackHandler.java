@@ -143,7 +143,7 @@ public class CallbackHandler {
     }
 
     private void logoutPrepare(CallbackQuery callbackQuery) {
-        String text = messageResource.getMessage("account.logout.prepare");
+        String text = messageResource.getMessage("account.logout.caution");
         long chatId = callbackQuery.getMessage().getChatId();
         int messageId = callbackQuery.getMessage().getMessageId();
 
@@ -153,7 +153,7 @@ public class CallbackHandler {
         String logoutCallbackDataId = dataCache.put(logoutCallbackData);
 
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("account.logout"), logoutCallbackDataId)),
+                row(button(messageResource.getMessage("account.logout.confirm"), logoutCallbackDataId)),
                 row(button(messageResource.getMessage("button.back"), settingsCallbackDataId))
         );
         bot.editMessage(text, chatId, messageId, markup);
