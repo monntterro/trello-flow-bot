@@ -63,6 +63,7 @@ public class CallbackHandler {
             case SETTINGS -> setting(callbackQuery);
             case REMINDER_SEEN -> reminderSeen(callbackQuery, callbackData.getData());
             case POSTPONE_REMINDER -> postponeReminder(callbackQuery, callbackData.getData());
+            case UPDATE_WEBHOOKS -> updateWebhooks(callbackQuery);
         }
     }
 
@@ -224,10 +225,13 @@ public class CallbackHandler {
 
         String accountCallbackData = JsonParser.create().with("type", CallbackType.ACCOUNT_SETTINGS).toJson();
         String menuCallbackData = JsonParser.create().with("type", CallbackType.MENU).toJson();
+        String updateWebhooksCallbackData = JsonParser.create().with("type", CallbackType.UPDATE_WEBHOOKS).toJson();
         String accountCallbackDataId = dataCache.put(accountCallbackData);
         String menuCallbackDataId = dataCache.put(menuCallbackData);
+        String updateWebhooksCallbackDataId = dataCache.put(updateWebhooksCallbackData);
         InlineKeyboardMarkup markup = inlineKeyboard(
-                row(button(messageResource.getMessage("menu.account"), accountCallbackDataId)),
+                row(button(messageResource.getMessage("settings.account"), accountCallbackDataId)),
+                row(button(messageResource.getMessage("settings.update-webhooks"), updateWebhooksCallbackDataId)),
                 row(button(messageResource.getMessage("button.back"), menuCallbackDataId))
         );
 
@@ -324,12 +328,6 @@ public class CallbackHandler {
         bot.editMessage(text, chatId, messageId);
     }
 
-    private User getUser(CallbackQuery callbackQuery) {
-        long telegramId = callbackQuery.getFrom().getId();
-        return userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
-    }
-
     private void reminderSeen(CallbackQuery callbackQuery, String data) {
         Long reminderId = JsonParser.read(data, "reminderId", Long.class);
         Reminder reminder = reminderService.findById(reminderId).orElseThrow();
@@ -360,5 +358,27 @@ public class CallbackHandler {
         int messageId = callbackQuery.getMessage().getMessageId();
         long chatId = callbackQuery.getMessage().getChatId();
         bot.editMessage(text, chatId, messageId, message.getEntities());
+    }
+
+    private void updateWebhooks(CallbackQuery callbackQuery) {
+        User user = getUser(callbackQuery);
+        trelloClientFacade.updateWebhooks(user);
+
+        String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
+        String settingsCallbackDataId = dataCache.put(settingsCallbackData);
+        InlineKeyboardMarkup markup = inlineKeyboard(
+                row(button(messageResource.getMessage("button.back"), settingsCallbackDataId))
+        );
+
+        String text = messageResource.getMessage("settings.update-webhooks.success");
+        int messageId = callbackQuery.getMessage().getMessageId();
+        long chatId = callbackQuery.getMessage().getChatId();
+        bot.editMessage(text, chatId, messageId, markup);
+    }
+
+    private User getUser(CallbackQuery callbackQuery) {
+        long telegramId = callbackQuery.getFrom().getId();
+        return userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User with telegramId %d not found".formatted(telegramId)));
     }
 }

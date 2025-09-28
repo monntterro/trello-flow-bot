@@ -34,8 +34,8 @@ public class TrelloClient {
     public Webhook createWebhook(String modelId, String webhookPath, String accessToken, String accessSecret) {
         String callbackUrl = buildCallbackUrl(webhookPath);
         OAuthRequest createWebhookRequest = new OAuthRequest(Verb.POST, "https://api.trello.com/1/webhooks");
-        createWebhookRequest.addParameter("callbackURL", callbackUrl);
-        createWebhookRequest.addParameter("idModel", modelId);
+        createWebhookRequest.addBodyParameter("callbackURL", callbackUrl);
+        createWebhookRequest.addBodyParameter("idModel", modelId);
         String json = executeSignedRequest(createWebhookRequest, accessToken, accessSecret);
 
         return convert(json, Webhook.class);
@@ -64,26 +64,34 @@ public class TrelloClient {
         return convert(json, Card.class);
     }
 
-    public List<com.monntterro.trelloflowbot.core.model.List> getListsForBoard(String boardId, String token,
-                                                                               String tokenSecret) {
+    public List<com.monntterro.trelloflowbot.core.model.List> getListsForBoard(String boardId, String accessToken,
+                                                                               String accessSecret) {
         OAuthRequest getListsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/boards/" + boardId + "/lists");
-        String json = executeSignedRequest(getListsRequest, token, tokenSecret);
+        String json = executeSignedRequest(getListsRequest, accessToken, accessSecret);
 
         return convert(json, new TypeReference<List<com.monntterro.trelloflowbot.core.model.List>>() {});
     }
 
-    public List<Organization> getUserOrganizations(String token, String tokenSecret) {
+    public List<Organization> getUserOrganizations(String accessToken, String accessSecret) {
         OAuthRequest getOrganizationsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/members/me/organizations");
-        String json = executeSignedRequest(getOrganizationsRequest, token, tokenSecret);
+        String json = executeSignedRequest(getOrganizationsRequest, accessToken, accessSecret);
 
         return convert(json, new TypeReference<List<Organization>>() {});
     }
 
-    public List<Board> getBoardsByOrganization(String organizationId, String token, String tokenSecret) {
+    public List<Board> getBoardsByOrganization(String organizationId, String accessToken, String accessSecret) {
         OAuthRequest getBoardsRequest = new OAuthRequest(Verb.GET, "https://api.trello.com/1/organizations/" + organizationId + "/boards");
-        String json = executeSignedRequest(getBoardsRequest, token, tokenSecret);
+        String json = executeSignedRequest(getBoardsRequest, accessToken, accessSecret);
 
         return convert(json, new TypeReference<List<Board>>() {});
+    }
+
+    public void updateWebhookCallbackUrl(String webhookId, String webhookPath, String accessToken, String accessSecret) {
+        OAuthRequest updateWebhookRequest = new OAuthRequest(Verb.PUT, "https://api.trello.com/1/webhooks/" + webhookId);
+        String callbackUrl = buildCallbackUrl(webhookPath);
+        updateWebhookRequest.addBodyParameter("callbackURL", callbackUrl);
+
+        executeSignedRequest(updateWebhookRequest, accessToken, accessSecret);
     }
 
     private String executeSignedRequest(OAuthRequest request, String accessToken, String accessSecret) {

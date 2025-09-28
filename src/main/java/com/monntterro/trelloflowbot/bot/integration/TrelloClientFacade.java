@@ -98,4 +98,11 @@ public class TrelloClientFacade {
                 .toList();
         return boardModelService.saveAllOrUpdate(boardModels, user);
     }
+
+    public void updateWebhooks(User user) {
+        user.getTrelloWebhooks().forEach(webhook -> {
+            String webhookPath = user.getId().toString();
+            trelloClient.updateWebhookCallbackUrl(webhook.getId(), webhookPath, user.getToken(), user.getTokenSecret());
+        });
+    }
 }

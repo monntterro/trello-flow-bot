@@ -33,7 +33,7 @@ app:
   url: ${APP_URL}
 trello:
   webhook:
-    path: /trello/webhook
+    path: /trello/webhooks
   api:
     auth_token:
       expiration: never

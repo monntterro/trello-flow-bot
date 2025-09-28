@@ -2,11 +2,7 @@ ext {
     versions = [
             springCloud: '2024.0.1',
             telegramBot: '8.3.0',
-            lombok     : '1.18.36',
-            postgres   : '42.6.1',
-            flyway     : '11.1.0',
-            junitPlatformLauncher: '1.11.4',
-            scribe               : '8.3.3',
+            scribe: '8.3.3',
     ]
 }
 
@@ -29,20 +25,20 @@ dependencies {
     implementation "com.github.scribejava:scribejava-core:${versions.scribe}"
 
     // Flyway
-    implementation "org.flywaydb:flyway-core:${versions.flyway}"
-    implementation "org.flywaydb:flyway-database-postgresql:${versions.flyway}"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
 
     // Postgres
-    runtimeOnly "org.postgresql:postgresql:${versions.postgres}"
+    runtimeOnly "org.postgresql:postgresql"
 
     // Lombok
-    compileOnly "org.projectlombok:lombok:${versions.lombok}"
-    annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
-    testCompileOnly "org.projectlombok:lombok:${versions.lombok}"
-    testAnnotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+    compileOnly "org.projectlombok:lombok"
+    annotationProcessor "org.projectlombok:lombok"
+    testCompileOnly "org.projectlombok:lombok"
+    testAnnotationProcessor "org.projectlombok:lombok"
 
     // Testing
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${versions.junitPlatformLauncher}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 configurations {
