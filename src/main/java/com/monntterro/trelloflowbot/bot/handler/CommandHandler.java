@@ -1,9 +1,12 @@
 package com.monntterro.trelloflowbot.bot.handler;
 
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
+import com.monntterro.trelloflowbot.bot.entity.user.State;
+import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.integration.TrelloAccountService;
 import com.monntterro.trelloflowbot.bot.model.CallbackType;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
+import com.monntterro.trelloflowbot.bot.service.UserService;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.MessageResource;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +22,13 @@ public class CommandHandler {
     private static final String START_COMMAND = "/start";
     private static final String LOGIN = "/login";
     private static final String MENU_COMMAND = "/menu";
+    private static final String CANCEL_COMMAND = "/cancel";
 
     private final TelegramBot bot;
     private final CallbackDataCache dataCache;
     private final MessageResource messageResource;
     private final TrelloAccountService accountService;
+    private final UserService userService;
 
     public void processCommand(Message message) {
         String command = message.getText();
@@ -31,7 +36,19 @@ public class CommandHandler {
             case START_COMMAND -> startCommand(message);
             case LOGIN -> trelloLogin(message);
             case MENU_COMMAND -> menuCommand(message);
+            case CANCEL_COMMAND -> cancelCommand(message);
         }
+    }
+
+    private void cancelCommand(Message message) {
+        User user = userService.findByTelegramId(message.getFrom().getId())
+                .orElseThrow();
+        user.setState(State.IDLE);
+        userService.save(user);
+
+        String text = messageResource.getMessage("cancel.text");
+        long chatId = message.getChatId();
+        bot.sendMessage(text, chatId);
     }
 
     private void menuCommand(Message message) {

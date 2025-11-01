@@ -3,6 +3,7 @@ package com.monntterro.trelloflowbot.bot.handler;
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.ListModel;
 import com.monntterro.trelloflowbot.bot.entity.Reminder;
+import com.monntterro.trelloflowbot.bot.entity.user.State;
 import com.monntterro.trelloflowbot.bot.entity.user.User;
 import com.monntterro.trelloflowbot.bot.integration.TrelloAccountService;
 import com.monntterro.trelloflowbot.bot.integration.TrelloClientFacade;
@@ -64,7 +65,20 @@ public class CallbackHandler {
             case REMINDER_SEEN -> reminderSeen(callbackQuery, callbackData.getData());
             case POSTPONE_REMINDER -> postponeReminder(callbackQuery, callbackData.getData());
             case UPDATE_WEBHOOKS -> updateWebhooks(callbackQuery);
+            case CHANGE_UTC_OFFSET -> changeUtcOffset(callbackQuery);
         }
+    }
+
+    private void changeUtcOffset(CallbackQuery callbackQuery) {
+        User user = getUser(callbackQuery);
+        user.setState(State.CHANGE_UTC_OFFSET);
+        userService.save(user);
+        Integer utcOffset = user.getUserSettings().getUtcOffset();
+
+        String text = messageResource.getMessage("account.change-utc-offset.text", utcOffset);
+        long chatId = callbackQuery.getMessage().getChatId();
+        int messageId = callbackQuery.getMessage().getMessageId();
+        bot.editMessage(text, chatId, messageId);
     }
 
     private void getBoardsByOrganization(CallbackQuery callbackQuery, String data) {
@@ -183,9 +197,11 @@ public class CallbackHandler {
 
         String settingsCallbackData = JsonParser.create().with("type", CallbackType.SETTINGS).toJson();
         String logoutCallbackData = JsonParser.create().with("type", CallbackType.LOGOUT_PREPARE).toJson();
+        String changeUtcOffsetCallbackData = JsonParser.create().with("type", CallbackType.CHANGE_UTC_OFFSET).toJson();
 
         String settingsCallbackDataId = dataCache.put(settingsCallbackData);
         String logoutCallbackDataId = dataCache.put(logoutCallbackData);
+        String changeUtcOffsetCallbackDataId = dataCache.put(changeUtcOffsetCallbackData);
 
         String url;
         try {
@@ -197,6 +213,7 @@ public class CallbackHandler {
         InlineKeyboardMarkup markup = inlineKeyboard(
                 row(urlButton(messageResource.getMessage("account.login"), url)),
                 row(button(messageResource.getMessage("account.logout"), logoutCallbackDataId)),
+                row(button(messageResource.getMessage("account.change-utc-offset"), changeUtcOffsetCallbackDataId)),
                 row(button(messageResource.getMessage("button.back"), settingsCallbackDataId))
         );
         bot.editMessage(text, chatId, messageId, markup);

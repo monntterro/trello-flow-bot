@@ -49,4 +49,8 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TrelloWebhook> trelloWebhooks = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_settings_id")
+    private UserSettings userSettings;
 }

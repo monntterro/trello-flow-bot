@@ -4,6 +4,7 @@ import com.monntterro.trelloflowbot.bot.converter.TrelloUpdateConverter;
 import com.monntterro.trelloflowbot.core.model.TrelloUpdate;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -26,6 +27,10 @@ public class Reminder {
 
     @Column(name = "user_chat_id")
     private Long userChatId;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private Instant createdAt;
 
     @Column(name = "next_reminder_time")
     public Instant nextReminderTime;

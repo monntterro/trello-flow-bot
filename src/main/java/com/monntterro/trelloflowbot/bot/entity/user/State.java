@@ -1,5 +1,5 @@
 package com.monntterro.trelloflowbot.bot.entity.user;
 
 public enum State {
-    IDLE
+    CHANGE_UTC_OFFSET, IDLE
 }

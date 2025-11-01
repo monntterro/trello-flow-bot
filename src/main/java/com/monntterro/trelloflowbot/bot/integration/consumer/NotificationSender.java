@@ -2,7 +2,9 @@ package com.monntterro.trelloflowbot.bot.integration.consumer;
 
 import com.monntterro.trelloflowbot.bot.cache.CallbackDataCache;
 import com.monntterro.trelloflowbot.bot.entity.Reminder;
+import com.monntterro.trelloflowbot.bot.exception.UserNotFoundException;
 import com.monntterro.trelloflowbot.bot.model.CallbackType;
+import com.monntterro.trelloflowbot.bot.repository.UserRepository;
 import com.monntterro.trelloflowbot.bot.service.TelegramBot;
 import com.monntterro.trelloflowbot.bot.utils.JsonParser;
 import com.monntterro.trelloflowbot.bot.utils.TelegramMessage;
@@ -13,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
@@ -21,23 +26,42 @@ import static com.monntterro.trelloflowbot.bot.utils.ButtonUtils.*;
 @RequiredArgsConstructor
 public class NotificationSender {
     private final TelegramBot bot;
+    private final UserRepository userRepository;
     private final CallbackDataCache dataCache;
 
     public Optional<Message> send(Reminder reminder) {
         TelegramMessage message = TelegramMessage.create();
         TrelloUpdate trelloUpdate = reminder.getTrelloUpdate();
+
+        Long userChatId = reminder.getUserChatId();
+        int utcOffset = userRepository.findByChatId(userChatId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with chat id " + userChatId))
+                .getUserSettings().getUtcOffset();
+
+
         appendHeader(message, trelloUpdate);
+        appendCreationTime(message, reminder, utcOffset);
         appendUserInfo(message, trelloUpdate);
         appendAction(message, trelloUpdate);
 
-        return bot.sendMessageAndGetResult(message.getText(), reminder.getUserChatId(), message.getEntities(), buttons(reminder));
+        return bot.sendMessageAndGetResult(message.getText(), userChatId, message.getEntities(), buttons(reminder));
+    }
+
+    private void appendCreationTime(TelegramMessage text, Reminder reminder, int utcOffset) {
+        OffsetDateTime eventCreationTime = reminder.getCreatedAt().atOffset(ZoneOffset.ofHours(utcOffset));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy (XXX)");
+        String formattedTime = formatter.format(eventCreationTime).replace("Z", "+00:00");
+
+        text.append("\uD83D\uDD52 Событие создано: ")
+                .append(formattedTime)
+                .append("\n\n");
     }
 
     private void appendHeader(TelegramMessage text, TrelloUpdate trelloUpdate) {
         text.append("📌 Обновление на доске: ")
                 .textLink(trelloUpdate.getAction().getData().getBoard().getName(),
                           trelloUpdate.getModel().getShortUrl())
-                .append("\n\n");
+                .append("\n");
     }
 
     private void appendUserInfo(TelegramMessage text, TrelloUpdate trelloUpdate) {
