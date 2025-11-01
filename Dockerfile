@@ -1,7 +1,7 @@
 FROM bellsoft/liberica-openjdk-alpine:17-cds AS builder
 WORKDIR /application
 COPY . .
-RUN --mount=type=cache,target=/root/.gradle chmod +x gradlew && ./gradlew clean build -x test
+RUN --mount=type=cache,target=/root/.gradle chmod +x gradlew && ./gradlew clean bootJar -x test
 
 FROM bellsoft/liberica-openjre-alpine:17-cds
 VOLUME /tmp
