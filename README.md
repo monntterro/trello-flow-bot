@@ -21,13 +21,6 @@ and other events. It helps teams stay updated on board changes directly in Teleg
 - ️ Well-formatted messages
 - Displays the name of the user who performed the action
 
-| Notification Type           | Status |
-|-----------------------------|--------|
-| Card movement between lists | ✅      |
-| New comments on cards       | ✅      |
-| Mention from another card   | ✅      |
-| Card creation               | ❌      |
-
 ## 🖥️ Quick start
 1. Grant access to your Trello account for the bot with OAuth
 2. Select the lists you want to receive updates for
